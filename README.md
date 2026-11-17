@@ -1,3 +1,13 @@
+# 回声练习场
+
+原创 2D 横版格斗原型，优先支持电脑键盘。进入大厅可以开始人机对战、闯关和训练。
+
+使用 Node.js 20 或更高版本，在仓库根目录运行 `npm run dev`，然后打开 [本机练习场](http://127.0.0.1:4173)。无需安装依赖。`npm test` 运行规则测试，`npm run build` 生成可离线打开的 `dist/echo-arena.html`。
+
+[开发任务与验收记录](production/qa/task-bus-t01-t06.md) · [游戏配置](src/game/data/game.json) · [运行时设计](docs/architecture/web-combat.md)
+
+---
+
 <p align="center">
   <h1 align="center">Claude Code Game Studios</h1>
   <p align="center">

@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 200">
+ <title>远程机关</title>
+ <g stroke="#253741" stroke-width="6" stroke-linejoin="round">
+  <path fill="#7e8286" d="m81 132-13 28 24-3 19-23m19-3 14 27 25 2-16-34z"/>
+  <path fill="#97aa9e" d="m68 88 19-35 53-8 28 24-4 58-38 19-56-17z"/>
+  <path fill="#617b82" d="m71 92 29 11 60-13 4 35-37 20-56-16z"/>
+  <path fill="#dad0a6" d="m89 70 23-7 17 12-4 22-24 6-16-13z"/>
+  <path fill="#50626b" d="m102 77 13-3 5 9-9 12-12-4z"/>
+  <path fill="#b4a881" d="m137 80 41-13 25 13v30l-24 10-40-17z"/>
+  <path fill="#6d7e7b" d="m179 68 24 12v30l-25 10-9-15V85z"/>
+  <path fill="#ffd285" d="m185 84 11 4v12l-12 5-4-6V90z"/>
+  <path d="m81 117 18 5m18-5 10-2" stroke="#d1d9b7" stroke-width="4"/>
+ </g>
+</svg>

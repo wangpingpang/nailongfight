@@ -1,0 +1,64 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 460" preserveAspectRatio="xMidYMid slice">
+<title>回声练习场：声学接收器与训练台</title>
+<defs>
+ <linearGradient id="sky" x2="0" y2="1" gradientUnits="objectBoundingBox"><stop stop-color="#527b80"/><stop offset=".55" stop-color="#98b5a8"/><stop offset="1" stop-color="#eed1a4"/></linearGradient>
+ <linearGradient id="deck" x2=".8" y2="1"><stop stop-color="#78938b"/><stop offset=".53" stop-color="#687c7b"/><stop offset="1" stop-color="#3d5960"/></linearGradient>
+ <pattern id="dots" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(-12)"><circle cx="1.5" cy="1.5" r=".95" fill="#203c48"/></pattern>
+ <pattern id="lines" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(35)"><path d="M0 0v6" stroke="#f2dcae" stroke-width="1.5"/></pattern>
+ <clipPath id="sun"><circle cx="632" cy="137" r="139"/></clipPath>
+</defs>
+<path fill="url(#sky)" d="M0 0h900v460H0z"/>
+<circle cx="632" cy="137" r="148" fill="none" stroke="#d9cfaa" stroke-width="1" opacity=".55"/>
+<circle cx="632" cy="137" r="139" fill="#f6d89e"/>
+<path d="M460 119q157-20 327-4m-323 15q152-15 324-2m-318 15q160-13 320-3m-305 21q153-5 290-7m-286 19q162-1 283-8m-253 20q105-1 232-9" fill="none" stroke="#b8bfa0" stroke-width="2" clip-path="url(#sun)" opacity=".8"/>
+<path d="M0 157q114-16 227-15l-90 6 108-1-93 7-152 9zm390-83 75-4 33 2H459zm-163 28 81-4 60 1-52 3zm485-81 70-2 68 2-39 2z" fill="#d7cfaf" opacity=".78"/>
+<path d="M0 199c53-10 112-24 150-21 42 3 58 6 94-4 33-9 58-19 90-15 65 12 102 23 137 12 48-14 75-12 135 5 42 14 72 1 109-9 51-15 112-18 185-7v81H0z" fill="#98ada0"/>
+<path d="M0 204c56-9 112-9 158-11 62-4 97-18 140-17 57 1 104 19 152 15 42-3 65-16 105-18 57 0 107 19 149 16 54-4 121-22 196-17v71H0z" fill="#72958b"/>
+<path d="M0 236h900v29H0z" fill="#6b9090"/>
+<path d="M28 232v-65h13v65z" fill="#6d8b84"/><path d="M24 168h21v3H24z" fill="#6d8b84"/>
+<path d="M65 232v-49h9v49z" fill="#6d8b84"/><path d="M61 184h17v3H61z" fill="#6d8b84"/>
+<path d="M110 232v-54h6v54z" fill="#6d8b84"/><path d="M106 179h14v3H106z" fill="#6d8b84"/>
+<path d="M198 232v-20h6v20z" fill="#6d8b84"/><path d="M194 213h14v3H194z" fill="#6d8b84"/>
+<path d="M373 232v-32h8v32z" fill="#6d8b84"/><path d="M369 201h16v3H369z" fill="#6d8b84"/>
+<path d="M413 232v-56h7v56z" fill="#6d8b84"/><path d="M409 177h15v3H409z" fill="#6d8b84"/>
+<path d="M535 232v-29h7v29z" fill="#6d8b84"/><path d="M531 204h15v3H531z" fill="#6d8b84"/>
+<path d="M729 232v-64h12v64z" fill="#6d8b84"/><path d="M725 169h20v3H725z" fill="#6d8b84"/>
+<path d="M798 232v-43h8v43z" fill="#6d8b84"/><path d="M794 190h16v3H794z" fill="#6d8b84"/>
+<path d="M849 232v-74h10v74z" fill="#6d8b84"/><path d="M845 159h18v3H845z" fill="#6d8b84"/>
+<g fill="none" stroke="#728b81" stroke-width="4">
+<path d="M0 189q102-49 190-2m472 10q122-50 238-21" />
+</g>
+<g transform="translate(455 144) rotate(-7)" fill="none">
+ <ellipse rx="55" ry="13" stroke="#647c75" stroke-width="6"/><ellipse rx="63" ry="15" stroke="#9db19c" stroke-width="2"/>
+ <path d="m-35 12 25 51h15l13-50M-44-10l30-36 19 1 28 35" stroke="#68857d" stroke-width="5"/>
+ <path d="m-5-59 2 61" stroke="#6e8479" stroke-width="2"/>
+</g>
+<g transform="translate(778 155) rotate(-8)" fill="none">
+ <ellipse rx="42" ry="11" stroke="#6e877b" stroke-width="6"/><path d="m-18 9 12 39h7l10-38" stroke="#68857d" stroke-width="5"/>
+</g>
+<path d="M0 227c96-25 188-28 281-14l-2 9c-108-13-184-5-279 17zm532-7c146-23 252-37 368-34v13c-115-3-245 12-368 29z" fill="#537976"/>
+<path d="M0 236c113-22 205-24 333-7M549 224c139-20 245-32 351-29" fill="none" stroke="#c2b994" stroke-width="2"/>
+<!-- An acoustic receiver on the left and relay masts on the right frame the practice deck. -->
+<g fill="#425f64" stroke="#344d56" stroke-linejoin="round">
+ <path d="m23 111 57-16 8 10-61 19zm13 10 12 84 7 1 1-90zm26-5 14 85h7l-3-89z"/>
+ <path d="m-10 113 54-19 31-5 56-1-52 15-37 10-52 9z" fill="#537674" stroke-width="3"/>
+ <path d="m28 97 25-21 15-2 12 13" fill="none" stroke-width="3"/>
+ <path d="m836 190 12-85 7-3 5 87zm1-88 28-9 15 3-30 10z"/>
+ <path d="m846 99 7-38 9-2-2 39" fill="none" stroke-width="3"/>
+</g>
+<path d="M0 237c240-16 404-5 618-16 88-5 193-15 282-19v33c-360 24-637 28-900 38z" fill="#46696a"/>
+<path d="M0 247c303-20 560-12 900-35" fill="none" stroke="#ccb993" stroke-width="3"/>
+<path d="M0 262c282-18 561-12 900-39v237H0z" fill="url(#deck)"/>
+<path d="M0 281c342-21 635-18 900-44v6c-235 18-527 24-900 50z" fill="#b0ad91"/>
+<path d="M-60 434 261 269l14-1L14 431zm417 26 255-205 10-1-222 206zm353 0L817 241h7l-86 219z" fill="#81908a"/>
+<path d="M0 353c281-27 595-28 900-62M0 424c294-31 609-47 900-69" fill="none" stroke="#405d60" stroke-width="3" opacity=".85"/>
+<path d="M-15 442c229-61 489-110 770-132 72-5 124-6 186-6" fill="none" stroke="#c4b38c" stroke-width="8" opacity=".84"/>
+<path d="M-15 452c229-61 492-112 770-134" fill="none" stroke="#d9bd8e" stroke-width="2"/>
+<g stroke="#e4c48d" stroke-width="3" fill="none" opacity=".84">
+ <path d="m233 357 39-5m8-1 22-4m196-76 32-4m263 39 31-2"/>
+ <path d="m482 345 24-18 26-2m55 52 34-4-3 12m-395-59 19-4 8-6"/>
+</g>
+
+<path d="M12 284 888 243m-876 75 876-41m-876 75 876-42m-876 78 876-42m-876 80 876-40" fill="none" stroke="#c0c3a4" stroke-width="1" opacity=".3"/>
+<path d="M0 0h900v460H0z" fill="url(#dots)" opacity=".075"/>
+</svg>
