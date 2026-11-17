@@ -1,0 +1,13 @@
+{
+  "name": "echo-practice-arena",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "engines": { "node": ">=20" },
+  "scripts": {
+    "dev": "node scripts/game-server.mjs",
+    "start": "node scripts/game-server.mjs",
+    "build": "node scripts/game-build.mjs",
+    "test": "node --test tests/game/*.test.mjs"
+  }
+}

@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 200">
+ <title>近战机关</title>
+ <g stroke="#243744" stroke-width="6" stroke-linejoin="round">
+  <path fill="#7d9390" d="m66 126 13 15-12 20h26l13-23 23-3 14 24h24l-8-23 13-15-9-8z"/>
+  <path fill="#93b2a9" d="m50 93 39-33 58-3 30 28-10 43-42 15-48-14z"/>
+  <path fill="#566f78" d="m52 93 36-13 49 9 35-6-8 16-27 16-52-5z"/>
+  <path fill="#ffcb72" d="m137 95 21-7-3 11-20 9z"/>
+  <path fill="#59747c" d="m57 98-20 23 17 19 24-6-3-15zm104 6 18 12-4 21 22-9 5-21-25-18z"/>
+  <path fill="#d2b886" d="m77 77 14-23 39-5 16 11-29 15z"/>
+  <path stroke="#d8e2cc" stroke-width="4" d="m81 86 22 1m-12 36 18 4"/>
+ </g>
+</svg>

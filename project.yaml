@@ -25,3 +25,15 @@ framework:
 # here. `/project-settings --local <key>=<value>` writes there; `/project-settings <key>=<value>`
 # edits this file. See `.claude/docs/config-resolution.md` for the full
 # precedence order.
+
+engine:
+  name: Web
+  language: JavaScript
+  rendering: Canvas 2D
+  code_root: src/game
+  test_root: tests/game
+
+commands:
+  run: npm run dev
+  build: npm run build
+  test: npm test
