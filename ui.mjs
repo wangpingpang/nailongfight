@@ -1,3 +1,4 @@
+import {backgrounds, performanceCaption} from './scene-performance.mjs';
 import {fighterStatus} from './fighter-status.mjs';
 import {canonicalKeyCode, validateBindings} from './config.mjs';
 
@@ -198,7 +199,7 @@ export function createUI(root, callbacks) {
         node('article','panel',node('div','row-between',node('h2',null,c.name),tag(level?'Lv. '+level:'待解锁')),
           node('div','pills',tag(c.role),tag('生命 '+Math.round(c.hp*baseMult)),tag('攻击 '+Math.round(c.attack*baseMult))),
           c.metadata?.sourceName?muted('沿用「'+c.metadata.sourceName+'」模块技能，本版采用独立测试外形。'):null,
-          muted(c.description),muted(c.playstyle),list,level?null:muted('首次通过「'+Object.values(config.stages).find(s=>s.unlockCharacter===c.id)?.name+'」解锁。'),
+          muted(c.description),muted(c.playstyle),backgrounds[c.id]?muted(backgrounds[c.id]):null,list,level?null:muted('首次通过「'+Object.values(config.stages).find(s=>s.unlockCharacter===c.id)?.name+'」解锁。'),
           node('div','actions',pick,upgrade))));
   }
   function paintStages() {
@@ -268,7 +269,7 @@ export function createUI(root, callbacks) {
       const choose=playable().map(ch=>fighterButton(ch,c.id===ch.id,()=>{picks[i]=ch.id;ready[i]=false;paint();}));
       const confirm=button(ready[i]?'quiet ready':'minor',ready[i]?[icon('tick'),'已就绪 · 取消']:'玩家 '+(i+1)+' 就绪',()=>{ready[i]=!ready[i];paint();});
       panels.push(node('section','panel',node('div','row-between',node('h2',null,dual?'玩家 '+(i+1):'选择斗士'),tag(dual?slot.toUpperCase():'玩家')),
-        node('div','roster pick-grid',choose),node('div','pills',tag(c.role)),muted(c.playstyle),keyHelp(slot),dual?node('div','actions',confirm):null));
+        node('div','roster pick-grid',choose),node('div','pills',tag(c.role)),muted(c.playstyle),backgrounds[c.id]?muted(backgrounds[c.id]):null,keyHelp(slot),dual?node('div','actions',confirm):null));
     }
     const info=dual?'双方各自选择斗士并就绪。竞技属性统一，支持镜像选角。':mode==='training'?'假人保持静止，可自由试招。':'电脑控制镜像斗士，双方使用相同的基础属性。';
     main.replaceChildren(back(()=>go('home')),title(dual?'LOCAL VERSUS':mode==='training'?'PRACTICE':'SOLO ARENA',config.uiText[mode],info),
@@ -303,6 +304,8 @@ export function createUI(root, callbacks) {
     const canvas=node('canvas'); canvas.width=1220; canvas.height=498;
     const scene=battle.config.scenes[battle.sceneId ?? battle.config.defaultScene];
     canvas.setAttribute('aria-label',scene.name+'，'+config.uiText[battle.mode]+'战斗场地，使用键盘操作');
+    const caption=node('div','performance-caption');
+    caption.setAttribute('role','status');
     const field=node('div','arena-wrap',canvas);
     const p1=battle.actors.find(a=>a.team===1),p2=battle.actors.find(a=>a.team===2);
     const strips=[actionStrip(p1,'p1')];
@@ -311,8 +314,8 @@ export function createUI(root, callbacks) {
     const bar=node('div','battle-bar',node('div','battle-heading',node('h1',null,stageName || config.uiText[battle.mode]),stageName===scene.name?null:tag(scene.name)),
       button('tool',[icon('pause'),'暂停'],()=>call('onPause')));
     main.replaceChildren(bar,node('section','battle-shell',node('div','hud-top',left.el,node('div','clock',clock,clockLabel),right.el),
-      field,node('div','hud-bottom',strips.map(s=>s.el))),hint);
-    hud={canvas,left,right,clock,clockLabel,hint,strips,battleId:battle.id,lastNotice:'',until:0};
+      field,caption,node('div','hud-bottom',strips.map(s=>s.el))),hint);
+    hud={canvas,caption,left,right,clock,clockLabel,hint,strips,battleId:battle.id,lastNotice:'',until:0};
   }
   function updateHealth(v,a,battle) {
     const hp=a?.hp ?? 0, maxHp=a?.maxHp ?? 1, wave=battle.stage?.wave;
@@ -391,6 +394,7 @@ export function createUI(root, callbacks) {
     if(left?.comboHits>=2)hint='受到 '+left.comboHits+' 连击';
     if(right?.comboHits>=2)hint='命中 '+right.comboHits+' 连击';
     write(hud.hint,hint);
+    write(hud.caption,performanceCaption(battle));
   }
   function showPause() {
     if(screen!=='battle')return;
