@@ -1,3 +1,6 @@
+import {fighterStatus} from './fighter-status.mjs';
+import {canonicalKeyCode, validateBindings} from './config.mjs';
+
 const paths = {
   echo: 'M3 18V9l5-5h8l5 5v9M7 17v-6l3-3h4l3 3v6M10 17v-4l2-2 2 2v4M3 21h18',
   arrow: 'M4 12h15m-6-6 6 6-6 6', back: 'M20 12H5m6-6-6 6 6 6',
@@ -10,8 +13,19 @@ const paths = {
   tick: 'm4 12 5 5L20 6', close: 'm5 5 14 14m0-14L5 19',
 };
 const labels = {up:'上移',down:'下移',left:'左移',right:'右移',basic:'普攻',s1:'技能一',s2:'技能二',defend:'闪身 / 脱身',ult:'奥义'};
-const keyNames = {ArrowUp:'↑',ArrowDown:'↓',ArrowLeft:'←',ArrowRight:'→',Space:'空格',Enter:'回车',Backspace:'退格',Escape:'Esc'};
-function keyName(code) { return keyNames[code] || String(code || '—').replace(/^(Key|Digit)/,''); }
+const keyNames = {
+  ArrowUp:'↑', ArrowDown:'↓', ArrowLeft:'←', ArrowRight:'→', Space:'空格', Enter:'回车',
+  NumpadEnter:'小键盘回车', NumpadAdd:'小键盘 +', NumpadSubtract:'小键盘 −', NumpadMultiply:'小键盘 ×',
+  NumpadDivide:'小键盘 ÷', NumpadDecimal:'小键盘 .', Backspace:'退格', Escape:'Esc',
+  Minus:'−', Equal:'=', BracketLeft:'[', BracketRight:']', Semicolon:';', Quote:"'", Comma:',', Period:'.',
+  Slash:'/', Backslash:'\\', Backquote:'`'
+};
+function keyName(code) {
+  const key=canonicalKeyCode(code || '') || '—';
+  if(/^Numpad\d$/.test(key))return '小键盘 '+key.slice(-1);
+  return keyNames[key] || key.replace(/^(?:Key|Digit)/,'');
+}
+const spareKeys = {p1:'KeyO',p2:'Digit6'};
 function node(tag, cls, ...content) {
   const el = document.createElement(tag);
   if (cls) el.className = cls;
@@ -54,9 +68,14 @@ function write(el, value) { const text=String(value); if (el.textContent!==text)
 export function createUI(root, callbacks) {
   let config, profile, notice='', screen='home', overlay='', bindingsCapture=null, draft=null;
   let selected='shell', characterOrigin='home', stageId='stage_01', mode='vs_ai', picks=[], ready=[];
+  let duelScene;
+  const stageScenes = new Map();
   let currentBattle=null, receipt=null, hud=null, busy=false, initialized=false, restoreFocus=null;
-  const playable = () => Object.values(config.characters).filter(c=>c.playable);
-  const defaultHero = () => profile.settings?.selectedCharacter || config.economy.initialCharacter;
+  const playable = () => config.roster ? config.roster.map(id=>config.characters[id]) : Object.values(config.characters).filter(c=>c.playable);
+  const defaultHero = () => {
+    const id=profile.settings?.selectedCharacter;
+    return playable().some(c=>c.id===id) && profile.levels[id] ? id : config.economy.initialCharacter;
+  };
   const settings = () => ({volume:.65, reduceEffects:false, bindings:config.input,...profile.settings});
   const call = (name,...args) => callbacks[name]?.(...args);
   const brandTitle=node('b');
@@ -129,8 +148,9 @@ export function createUI(root, callbacks) {
   }
   function paintHome() {
     const copy=config.uiText;
+    const backdrop=config.scenes[config.defaultScene];
     const hero=node('section','hero',
-      Object.assign(img(config.assets.arena.path,'两名斗士在练习场对阵'),{className:'hero-img'}),
+      Object.assign(img(config.assets[backdrop.asset].path,backdrop.alt),{className:'hero-img'}),
       node('div','hero-copy',node('span','kicker','SOLO ARENA'),node('h1',null,copy.vs_ai),
         node('p',null,copy.heroDescription),
         button('primary',[copy.heroAction,icon('arrow')],()=>openSelect('vs_ai'))));
@@ -144,7 +164,9 @@ export function createUI(root, callbacks) {
     characterOrigin=origin; selected=defaultHero(); go('characters');
   }
   function fighterButton(character,active,action,sub) {
-    const btn=button('fighter',[img(lookupImage(character,config),''),node('span',null,node('b',null,character.name),node('small',null,sub || character.role))],action);
+    const moduleName=character.metadata?.sourceName;
+    const detail=[moduleName && ('模块原名 · '+moduleName),sub || character.role].filter(Boolean).join(' ｜ ');
+    const btn=button('fighter',[img(lookupImage(character,config),''),node('span',null,node('b',null,character.name),node('small',null,detail))],action);
     btn.setAttribute('aria-pressed',String(active));
     return btn;
   }
@@ -170,11 +192,12 @@ export function createUI(root, callbacks) {
     });
     pick.disabled=!level || busy;
     const sourceName=characterOrigin==='stages'?'返回关卡':characterOrigin==='result'?'返回结算':'返回大厅';
-    main.replaceChildren(back(()=>go(characterOrigin),sourceName),title('FIGHTERS','角色档案'),
+    main.replaceChildren(back(()=>go(characterOrigin),sourceName),title('FIGHTERS','角色档案',config.roleModule?'角色模块候选素材 · 仅供内测试玩。':''),
       node('div','roster',playable().map(ch=>fighterButton(ch,ch.id===c.id,()=>{selected=ch.id;paint();},profile.levels[ch.id]?'Lv. '+profile.levels[ch.id]+' · '+ch.role:'闯关未解锁'))),
       node('section','section split',node('div','portrait-area',Object.assign(img(lookupImage(c,config),c.name),{className:'portrait'})),
         node('article','panel',node('div','row-between',node('h2',null,c.name),tag(level?'Lv. '+level:'待解锁')),
           node('div','pills',tag(c.role),tag('生命 '+Math.round(c.hp*baseMult)),tag('攻击 '+Math.round(c.attack*baseMult))),
+          c.metadata?.sourceName?muted('沿用「'+c.metadata.sourceName+'」模块技能，本版采用独立测试外形。'):null,
           muted(c.description),muted(c.playstyle),list,level?null:muted('首次通过「'+Object.values(config.stages).find(s=>s.unlockCharacter===c.id)?.name+'」解锁。'),
           node('div','actions',pick,upgrade))));
   }
@@ -182,6 +205,7 @@ export function createUI(root, callbacks) {
     const stages=Object.values(config.stages);
     if(!profile.unlockedStages.includes(stageId)) stageId=profile.unlockedStages[0];
     const s=config.stages[stageId], hero=config.characters[defaultHero()];
+    const sceneId = stageScenes.get(s.id) ?? config.defaultScene;
     const buttons=stages.map((stage,i)=>{
       const unlocked=profile.unlockedStages.includes(stage.id), cleared=profile.clearedStages.includes(stage.id);
       const card=button('stage-card',[node('span','stage-no','ST '+String(i+1).padStart(2,'0')),node('h2',null,stage.name),muted(stage.description),
@@ -194,15 +218,40 @@ export function createUI(root, callbacks) {
     main.replaceChildren(back(()=>go('home')),title('STAGE SELECT',config.uiText.pve,'完成关卡获得练习点。首次突破可解锁后续训练。'),node('div','stage-grid',buttons),
       node('div','panel section',node('div','row-between',node('div',null,node('span','kicker','FIELD TEAM'),node('h2',null,s.name)),
         node('div','pills',tag(hero.name),tag('Lv. '+profile.levels[hero.id]))),
-      node('div','actions',startButton('开始挑战',()=>({mode:'pve',characterId:hero.id,stageId:s.id})),button('minor','切换角色',()=>openCharacters('stages')))));
+      scenePicker(sceneId,id=>stageScenes.set(s.id,id)),
+      node('div','actions',startButton('开始挑战',()=>({mode:'pve',characterId:hero.id,stageId:s.id,sceneId:stageScenes.get(s.id) ?? config.defaultScene})),button('minor','切换角色',()=>openCharacters('stages')))));
+  }
+  function scenePicker(selectedId, onSelect) {
+    const group=node('div','scene-options');
+    group.setAttribute('role','group');
+    group.setAttribute('aria-label','选择场景');
+    for(const scene of Object.values(config.scenes)) {
+      const option=button('scene-option',[img(config.assets[scene.asset].path,''),
+        node('span',null,node('b',null,scene.name),icon('tick'))],()=>{
+        onSelect(scene.id);
+        for(const item of group.children) item.setAttribute('aria-pressed',String(item===option));
+      });
+      option.setAttribute('aria-pressed',String(scene.id===selectedId));
+      group.append(option);
+    }
+    return node('section','scene-picker',node('h2',null,'选择场景'),group);
   }
   function openSelect(nextMode) {
-    mode=nextMode; picks=[defaultHero(),nextMode==='pvp'?playable().at(-1).id:defaultHero()]; ready=[false,false]; go('select');
+    mode=nextMode; duelScene=config.defaultScene;
+    picks=[defaultHero(),nextMode==='pvp'?playable().at(-1).id:defaultHero()]; ready=[false,false]; go('select');
   }
   function keyHelp(slot) {
-    const keys=settings().bindings[slot];
-    return node('div','keyhelp',node('span',null,[keys.up,keys.left,keys.down,keys.right].map(k=>node('kbd',null,keyName(k))),'移动'),
-      ...['basic','s1','s2','defend','ult'].map(k=>node('span',null,node('kbd',null,keyName(keys[k])),k==='defend'?'防御':labels[k])));
+    const bindings=settings().bindings;
+    const keys=bindings[slot];
+    const directions=slot==='p2'?['up','down','left','right']:['up','left','down','right'];
+    const help=node('div','keyhelp',
+      node('span',null,directions.map(k=>node('kbd',null,keyName(keys[k]))),'移动'),
+      ...['basic','s1','s2','defend','ult'].map(k=>node('span',null,node('kbd',null,keyName(keys[k])),labels[k])));
+    const spare=spareKeys[slot];
+    const assigned=Object.values(bindings).some(group=>Object.values(group).some(code=>canonicalKeyCode(code)===spare));
+    if(!assigned) help.append(node('span',null,node('kbd',null,keyName(spare)),'预留'));
+    if(Object.values(keys).some(code=>/^Digit[1-6]$/.test(canonicalKeyCode(code)))) help.append(node('small',null,'数字 1–6 支持主键盘与小键盘。'));
+    return help;
   }
   function startButton(label,options,disabled=false) {
     const btn=button('primary',[label,icon('arrow')],async ()=>{
@@ -223,13 +272,16 @@ export function createUI(root, callbacks) {
     }
     const info=dual?'双方各自选择斗士并就绪。竞技属性统一，支持镜像选角。':mode==='training'?'假人保持静止，可自由试招。':'电脑控制镜像斗士，双方使用相同的基础属性。';
     main.replaceChildren(back(()=>go('home')),title(dual?'LOCAL VERSUS':mode==='training'?'PRACTICE':'SOLO ARENA',config.uiText[mode],info),
-      node('div',dual?'split':'',panels),node('div','actions',startButton(dual?'开始双人对战':mode==='training'?'进入训练':'开始人机对战',
-        ()=>({mode,characterId:picks[0],opponentId:dual?picks[1]:picks[0]}),dual&&!ready.every(Boolean))));
+      node('div',dual?'split':'',panels),scenePicker(duelScene,id=>{duelScene=id;}),
+      node('div','actions',startButton(dual?'开始双人对战':mode==='training'?'进入训练':'开始人机对战',
+        ()=>({mode,characterId:picks[0],opponentId:dual?picks[1]:picks[0],sceneId:duelScene}),dual&&!ready.every(Boolean))));
   }
   function vital(right) {
-    const name=node('b'),hp=node('small'),hpFill=node('i'),energyFill=node('i'),status=node('span'),energy=node('span');
-    return {name,hp,hpFill,energyFill,status,energy,
-      el:node('div','vitals'+(right?' right':''),node('div','hud-name',name,hp),node('div','track',hpFill),
+    const name=node('b'),hp=node('small'),hpFill=node('i','hp-current'),trail=node('i','hp-trail');
+    const energyFill=node('i'),status=node('span'),energy=node('span'),meter=node('div','track health',trail,hpFill);
+    meter.setAttribute('role','meter'); meter.setAttribute('aria-valuemin','0');
+    return {name,hp,hpFill,energyFill,status,energy,meter,trail,hitFrame:null,
+      el:node('div','vitals'+(right?' right':''),node('div','hud-name',name,hp),meter,
         node('div','track energy',energyFill),node('div','hud-meta',status,energy))};
   }
   function actionStrip(actor,slot) {
@@ -240,36 +292,74 @@ export function createUI(root, callbacks) {
       const cell=node('span','hud-skill',key,text,hint);
       el.append(cell); data[k]={cell,text,hint,key};
     }
-    return {slot,actorId:actor.id,el,data};
+    const trait=node('span','hud-trait');
+    trait.hidden=true;
+    el.append(trait);
+    return {slot,actorId:actor.id,el,data,trait};
   }
   function createHud(battle) {
     screen='battle'; currentBattle=battle; releaseOverlay(); reflect();
     const left=vital(false),right=vital(true),clock=node('b'),clockLabel=node('small'),hint=node('div','battle-hint');
     const canvas=node('canvas'); canvas.width=1220; canvas.height=498;
-    canvas.setAttribute('aria-label',config.uiText[battle.mode]+'战斗场地，使用键盘操作');
+    const scene=battle.config.scenes[battle.sceneId ?? battle.config.defaultScene];
+    canvas.setAttribute('aria-label',scene.name+'，'+config.uiText[battle.mode]+'战斗场地，使用键盘操作');
     const field=node('div','arena-wrap',canvas);
     const p1=battle.actors.find(a=>a.team===1),p2=battle.actors.find(a=>a.team===2);
     const strips=[actionStrip(p1,'p1')];
     if(battle.mode==='pvp'&&p2)strips.push(actionStrip(p2,'p2'));
     const stageName=battle.stage?config.stages[battle.stage.id].name:null;
-    const bar=node('div','battle-bar',node('h1',null,stageName || config.uiText[battle.mode]),
+    const bar=node('div','battle-bar',node('div','battle-heading',node('h1',null,stageName || config.uiText[battle.mode]),stageName===scene.name?null:tag(scene.name)),
       button('tool',[icon('pause'),'暂停'],()=>call('onPause')));
     main.replaceChildren(bar,node('section','battle-shell',node('div','hud-top',left.el,node('div','clock',clock,clockLabel),right.el),
       field,node('div','hud-bottom',strips.map(s=>s.el))),hint);
     hud={canvas,left,right,clock,clockLabel,hint,strips,battleId:battle.id,lastNotice:'',until:0};
   }
-  function showVitals(v,a,role='') {
-    if(!a) {write(v.name,'等待入场');write(v.hp,'');write(v.status,role);write(v.energy,'');v.hpFill.style.width=v.energyFill.style.width='0%';return;}
+  function updateHealth(v,a,battle) {
+    const hp=a?.hp ?? 0, maxHp=a?.maxHp ?? 1, wave=battle.stage?.wave;
+    const changed=v.actorId!==a?.id || v.characterId!==a?.characterId || v.maxHp!==maxHp || v.wave!==wave;
+    const width=value => Math.max(0,Math.min(100,100*value/maxHp))+'%';
+    if(changed || hp!==v.lastHp) {
+      v.meter.setAttribute('aria-hidden',String(!a));
+      v.meter.setAttribute('aria-label',a ? config.characters[a.characterId].name+'生命' : '生命');
+      v.meter.setAttribute('aria-valuemax',String(maxHp));
+      v.meter.setAttribute('aria-valuenow',String(hp));
+      v.hpFill.style.width=width(hp);
+    }
+    if(changed || !a || hp>v.lastHp || profile.settings?.reduceEffects) v.hitFrame=null;
+    else if(hp<v.lastHp) {
+      v.hitFrame=battle.frame;
+      v.trailFrom=v.lastHp;
+    }
+    let trailHp=hp;
+    if(v.hitFrame!==null) {
+      const elapsed=(battle.frame-v.hitFrame)/battle.config.rules.tickRate;
+      // Hold the pre-hit edge briefly, then let it meet the actual HP bar.
+      const remaining=Math.max(0,Math.min(1,1-(elapsed-.22)/.22));
+      trailHp=hp+(v.trailFrom-hp)*remaining;
+      if(remaining===0) v.hitFrame=null;
+    }
+    const trailWidth=width(trailHp);
+    if(v.trail.style.width!==trailWidth) v.trail.style.width=trailWidth;
+    v.actorId=a?.id; v.characterId=a?.characterId; v.maxHp=maxHp; v.lastHp=hp; v.wave=wave;
+  }
+  function showVitals(v,a,role,battle) {
+    updateHealth(v,a,battle);
+    if(!a) {write(v.name,'等待入场');write(v.hp,'');write(v.status,role);write(v.energy,'');v.energyFill.style.width='0%';return;}
     const c=config.characters[a.characterId];
     write(v.name,c.name);write(v.hp,Math.ceil(a.hp)+' / '+a.maxHp);
     write(v.status,role);write(v.energy,'能量 '+Math.floor(a.energy));
-    v.hpFill.style.width=Math.max(0,Math.min(100,100*a.hp/a.maxHp))+'%';
     v.energyFill.style.width=Math.max(0,Math.min(100,100*a.energy/config.rules.energyMax))+'%';
   }
   function updateStrip(strip,actor,b) {
-    const c=config.characters[actor.characterId],keys=settings().bindings[strip.slot];
+    const c=b.config.characters[actor.characterId],keys=settings().bindings[strip.slot];
+    const trait=fighterStatus(b,actor);
+    strip.trait.hidden=!trait;
+    if(trait) {
+      write(strip.trait,trait.name+' · '+trait.text);
+      strip.trait.dataset.active=String(trait.active);
+    }
     for(const [k,item] of Object.entries(strip.data)) {
-      const skill=config.skills[c[k]], cd=actor.cooldowns?.[k] || 0;
+      const skill=b.config.skills[c[k]], cd=actor.cooldowns?.[k] || 0;
       let label=k==='basic'?'普攻':k==='defend'?(actor.state==='HIT'?'脱身':'闪身'):skill?.name || labels[k];
       const low=k==='ult'&&actor.energy<(skill?.cost ?? config.rules.energyMax);
       write(item.key,keyName(keys[k]));write(item.text,label);
@@ -284,8 +374,8 @@ export function createUI(root, callbacks) {
     const left=battle.actors.find(a=>a.team===1);
     const enemies=battle.actors.filter(a=>a.team===2),right=enemies.find(a=>a.hp>0) || enemies.at(-1);
     const wave=battle.stage, hz=battle.config.rules.tickRate;
-    showVitals(hud.left,left,'P1');
-    showVitals(hud.right,right,battle.mode==='pvp'?'P2':battle.mode==='training'?'训练假人':wave?'本波 '+enemies.filter(a=>a.hp>0).length+' 名存活':'电脑');
+    showVitals(hud.left,left,'P1',battle);
+    showVitals(hud.right,right,battle.mode==='pvp'?'P2':battle.mode==='training'?'训练假人':wave?'本波 '+enemies.filter(a=>a.hp>0).length+' 名存活':'电脑',battle);
     const timed=['pvp','vs_ai'].includes(battle.mode);
     write(hud.clock, timed ? stamp(seconds(battle.config.rules.duelLimit-battle.frame,hz)) : wave ? wave.wave+' / '+wave.total : '∞');
     write(hud.clockLabel,timed?'剩余时间':wave?'波次':'训练');
@@ -314,6 +404,37 @@ export function createUI(root, callbacks) {
     if(overlay==='countdown')write(overlayHost.querySelector('.count'),n);
     else modal('countdown','准备继续',node('div','count',String(n)));
   }
+  function resultPose(actor, winner) {
+    const fighter = config.characters[actor.characterId];
+    const clip = config.animations?.[fighter.animation];
+    const id = actor.hp <= 0 ? 'death' : actor.team === winner ? 'victory' : null;
+    const action = clip?.actions.find(item => item.id === id);
+    if (!action) return null;
+
+    const art = node('span','outcome-pose');
+    art.setAttribute('role','img');
+    art.setAttribute('aria-label',fighter.name + ' · ' + action.label);
+    art.style.backgroundImage = 'url("' + config.assets[clip.sheets[action.sheet]].path + '")';
+    art.style.backgroundSize = clip.columns * 100 + '% ' + clip.rows * 100 + '%';
+    const position = index => {
+      const x = action.columns[index] * 100 / Math.max(1, clip.columns - 1);
+      const y = action.row * 100 / Math.max(1, clip.rows - 1);
+      return x + '% ' + y + '%';
+    };
+    const total = action.durations.reduce((sum, frames) => sum + frames, 0);
+    let elapsed = 0;
+    const keys = action.durations.map((frames, index) => {
+      const key = {backgroundPosition:position(index), offset:elapsed / total, easing:'steps(1, end)'};
+      elapsed += frames;
+      return key;
+    });
+    art.style.backgroundPosition = position(action.columns.length - 1);
+    if (!settings().reduceEffects && !globalThis.matchMedia?.('(prefers-reduced-motion: reduce)').matches) {
+      keys.push({backgroundPosition:art.style.backgroundPosition, offset:1});
+      art.animate?.(keys,{duration:total * 1000 / config.rules.tickRate, fill:'forwards'});
+    }
+    return art;
+  }
   function paintResult() {
     const b=currentBattle;
     if(!b){home();return;}
@@ -334,8 +455,13 @@ export function createUI(root, callbacks) {
       const entries=Object.values(config.stages),index=entries.findIndex(x=>x.id===stage.id);
       if(entries[index+1]&&profile.unlockedStages.includes(entries[index+1].id))next=button('primary',['下一关',icon('arrow')],()=>call('onNext'));
     }
+    // PVE waves can contain several enemies. Show the player's outcome and
+    // the last opponent without delaying settlement or advancing combat.
+    const actors = [b.actors.find(a => a.team === 1), b.actors.findLast(a => a.team === 2)];
+    const poses = actors.filter(Boolean).map(actor => resultPose(actor,b.result.winner)).filter(Boolean);
     const saveRetry=receipt?.notice?button('primary','重试保存',()=>call('onRetrySave')):null;
-    main.replaceChildren(node('section','result-panel',node('span','kicker','MATCH RESULT'),node('h1',null,titleText),lines,
+    main.replaceChildren(node('section','result-panel',node('span','kicker','MATCH RESULT'),node('h1',null,titleText),
+      poses.length ? node('div','outcome-poses',...poses) : null,lines,
       node('div','actions',saveRetry,next,button(next||saveRetry?'minor':'primary','再来一局',()=>call('onRetry')),
         stage?button('minor','角色养成',()=>openCharacters('result')):null,
         stage?button('quiet','返回关卡',()=>go('stages')):null,button('quiet','返回大厅',()=>call('onExit')))));
@@ -376,7 +502,7 @@ export function createUI(root, callbacks) {
       catch(e){if(draft)paintSettings(e.message);}
     });
     modal('settings','操作设置',volumeRow,node('label','setting-row','减少画面动态效果',effects),
-      node('h3',null,'键盘映射'),muted('点击键位后按新键。Esc 保留用于暂停。'),map,
+      node('h3',null,'键盘映射'),muted('点击动作对应的键位，再按新键。数字 1–6 支持主键盘与小键盘。O 和 6 默认预留，可改绑。Esc 暂停。'),map,
       ...(error?[node('p','errorline',error)]:[]),node('div','actions',save,button('quiet','取消',closeSettings),
         button('quiet','恢复默认键位',()=>{draft.bindings=structuredClone(config.input);bindingsCapture=null;paintSettings('');})));
   }
@@ -393,12 +519,18 @@ export function createUI(root, callbacks) {
       if(!event.repeat) {
         const {slot,key}=bindingsCapture;bindingsCapture=null;
         if(event.code==='Escape'){paintSettings('');return;}
-        if(!event.code || event.metaKey || event.ctrlKey || event.altKey || ['Tab','CapsLock','ContextMenu','Unidentified'].includes(event.code)){
+        if(!event.code || event.isComposing || event.metaKey || event.ctrlKey || event.altKey || ['Tab','CapsLock','ContextMenu','Unidentified'].includes(event.code)){
           paintSettings('请选择一个普通按键。');return;
         }
-        const conflict=Object.entries(draft.bindings).some(([s,actions])=>Object.entries(actions).some(([k,code])=>code===event.code && (s!==slot||k!==key)));
+        const pressed=canonicalKeyCode(event.code);
+        const conflict=Object.entries(draft.bindings).some(([player,actions])=>
+          Object.entries(actions).some(([action,code])=>
+            canonicalKeyCode(code)===pressed && (player!==slot||action!==key)));
         if(conflict){paintSettings('这个键已有动作使用，请选择其他键。');return;}
-        draft.bindings[slot][key]=event.code;paintSettings('');
+        const nextBindings={...draft.bindings,[slot]:{...draft.bindings[slot],[key]:pressed}};
+        try { validateBindings(nextBindings); }
+        catch { paintSettings('这个键已占用或由系统保留，请选择其他键。');return; }
+        draft.bindings=nextBindings;paintSettings('');
       }
     }else if(event.code==='Escape'){
       if(overlay==='settings'){event.preventDefault();event.stopImmediatePropagation();closeSettings();}

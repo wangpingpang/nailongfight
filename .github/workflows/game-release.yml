@@ -1,0 +1,89 @@
+name: Publish game prerelease
+
+on:
+  push:
+    branches: ['release/v*']
+  create:
+
+permissions: {}
+concurrency:
+  group: game-release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    if: >-
+      startsWith(github.ref, 'refs/heads/release/v') &&
+      ((github.event_name == 'create' && github.event.ref_type == 'branch') ||
+       (github.event_name == 'push' && !github.event.deleted))
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Verify version and build exact distribution
+        shell: bash
+        run: |
+          set -euo pipefail
+          tag="v$(node -p 'require("./package.json").version')"
+          [[ "$tag" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]
+          [[ "$GITHUB_REF" == "refs/heads/release/$tag" ]]
+          test -s "releases/$tag.md"
+          echo "TAG=$tag" >> "$GITHUB_ENV"
+          npm test
+          npm run build
+          python3 scripts/package-github-release.py
+          cmp dist/echo-arena.html dist/echo-arena-six-fighters.html
+          (cd dist && sha256sum --strict --check SHA256SUMS)
+      - name: Publish and verify release assets
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          api="repos/$GITHUB_REPOSITORY"
+          html=echo-arena-six-fighters.html
+          zip=echo-arena-six-fighters-source.zip
+          ref="refs/tags/$TAG"
+          tag_commit() {
+            git ls-remote --tags origin "$ref" "$ref^{}" |
+              awk -v ref="$ref" '$2==ref {direct=$1} $2==ref"^{}" {peeled=$1} END {print peeled ? peeled : direct}'
+          }
+
+          commit=$(tag_commit)
+          if [[ -n "$commit" && "$commit" != "$GITHUB_SHA" ]]; then
+            echo "::error::Tag $TAG already points to $commit"
+            exit 1
+          fi
+          matches=$(gh api --paginate "$api/releases?per_page=100" |
+            jq --slurp --arg tag "$TAG" '[.[][] | select(.tag_name == $tag)] | length')
+          if [[ "$matches" == 0 ]]; then
+            if [[ -z "$commit" ]]; then
+              gh api --method POST "$api/git/refs" -f ref="$ref" -f sha="$GITHUB_SHA" >/dev/null
+            fi
+            gh release create "$TAG" "dist/$html" "dist/$zip" dist/SHA256SUMS \
+              --verify-tag --target "$GITHUB_SHA" --prerelease --latest=false \
+              --title "$TAG" --notes-file "releases/$TAG.md"
+          else
+            [[ "$matches" == 1 && "$commit" == "$GITHUB_SHA" ]]
+          fi
+
+          [[ "$(tag_commit)" == "$GITHUB_SHA" ]]
+          gh release view "$TAG" --json tagName,isDraft,isPrerelease,assets |
+            jq -e --arg tag "$TAG" --arg html "$html" --arg zip "$zip" \
+              '.tagName == $tag and .isPrerelease and (.isDraft | not) and
+               ([.assets[].name] | sort) == ([$html,$zip,"SHA256SUMS"] | sort)' >/dev/null
+          verification=$(mktemp -d)
+          gh release download "$TAG" --dir "$verification" \
+            --pattern "$html" --pattern "$zip" --pattern SHA256SUMS
+          cmp dist/SHA256SUMS "$verification/SHA256SUMS"
+          cmp "dist/$html" "$verification/$html"
+          cmp "dist/$zip" "$verification/$zip"
+          (cd "$verification" && sha256sum --strict --check SHA256SUMS)

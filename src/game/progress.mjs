@@ -1,26 +1,34 @@
-import {validateBindings} from './config.mjs'
+import {canonicalKeyCode, validateBindings} from './config.mjs'
 
 const STORE_KEY = 'echo-ring.progress.v1'
 const BACKUP_KEY = STORE_KEY + '.backup'
+const legacyRoster = ['shell','cloud']
+const bindingVersion = 2
+// Factory layout shipped in both 0.1.0 and 0.1.1. Keep this snapshot independent
+// of config.input so old defaults can be distinguished from player choices.
+const previousInput = {
+  p1:{up:'KeyW',down:'KeyS',left:'KeyA',right:'KeyD',basic:'KeyF',s1:'KeyG',s2:'KeyH',defend:'KeyR',ult:'KeyT'},
+  p2:{up:'ArrowUp',down:'ArrowDown',left:'ArrowLeft',right:'ArrowRight',basic:'KeyJ',s1:'KeyK',s2:'KeyL',defend:'KeyO',ult:'KeyP'}
+}
 const record = value => value !== null && typeof value === 'object' && !Array.isArray(value)
 const safeInteger = value => Number.isSafeInteger(value) && value >= 0
 const emptyReceipt = () => ({points:0, first:false, unlockedCharacter:null, nextStage:null})
 
 function initialProfile(config) {
-  const {initialCharacter, initialStage} = config.economy
+  const {initialStage} = config.economy
   return {
-    schema_version:1, config_version:config.version,
-    points:0, levels:{[initialCharacter]:1}, clearedStages:[], unlockedStages:[initialStage],
+    schema_version:2, config_version:config.version, bindings_version:bindingVersion,
+    points:0, levels:Object.fromEntries(config.roster.map(id => [id,1])), clearedStages:[], unlockedStages:[initialStage],
     settings:{}, settlements:{}
   }
 }
 
-function validSettings(settings, levels, config) {
+function validSettings(settings, levels, roster) {
   if (!record(settings)) return false
   if ('volume' in settings && !(Number.isFinite(settings.volume) && settings.volume >= 0 && settings.volume <= 1)) return false
   if ('reduceEffects' in settings && typeof settings.reduceEffects !== 'boolean') return false
   if ('selectedCharacter' in settings && (!Object.hasOwn(levels,settings.selectedCharacter) ||
-      !config.characters[settings.selectedCharacter]?.playable)) return false
+      !roster.includes(settings.selectedCharacter))) return false
   if ('bindings' in settings) {
     try { validateBindings(settings.bindings) } catch { return false }
   }
@@ -28,18 +36,21 @@ function validSettings(settings, levels, config) {
 }
 
 function decodedProfileMatches(p,config) {
-  if (!record(p) || p.schema_version !== 1 || !p.config_version || !safeInteger(p.points)) return false
+  if (!record(p) || ![1,2].includes(p.schema_version) || !p.config_version || !safeInteger(p.points)) return false
 
   const {initialCharacter,initialStage,levelCosts} = config.economy
-  if (!record(p.levels) || !Object.hasOwn(p.levels,initialCharacter)) return false
+  const legacy = p.schema_version === 1
+  const roster = legacy ? legacyRoster : config.roster
+  if (!record(p.levels) || !Object.hasOwn(p.levels,legacy ? 'shell' : initialCharacter)) return false
   for (const [id,level] of Object.entries(p.levels)) {
-    if (!config.characters[id]?.playable || !Number.isInteger(level) || level < 1 || level > levelCosts.length + 1) return false
+    if ((!roster.includes(id) && !legacyRoster.includes(id)) || !Number.isInteger(level) || level < 1 || level > levelCosts.length + 1) return false
   }
   const validStages = list => Array.isArray(list) && new Set(list).size === list.length &&
     list.every(id => Object.hasOwn(config.stages,id))
   if (!validStages(p.unlockedStages) || !p.unlockedStages.includes(initialStage) ||
       !validStages(p.clearedStages) || !p.clearedStages.every(id=>p.unlockedStages.includes(id))) return false
-  if (!validSettings(p.settings,p.levels,config) || !record(p.settlements)) return false
+  if (!validSettings(p.settings,p.levels,roster) || !record(p.settlements)) return false
+  if (p.legacySelectedCharacter !== undefined && !legacyRoster.includes(p.legacySelectedCharacter)) return false
   return Object.values(p.settlements).every(r =>
     record(r) && safeInteger(r.points) && typeof r.first === 'boolean' &&
     (r.unlockedCharacter === null || Object.hasOwn(config.characters,r.unlockedCharacter)) &&
@@ -47,11 +58,61 @@ function decodedProfileMatches(p,config) {
   )
 }
 
+// Called only for unversioned legacy settings. Current saves may intentionally
+// use the old factory controls, so a numerical config version alone is insufficient.
+function migrateBindings(profile, defaults) {
+  const bindings = profile.settings?.bindings
+  profile.bindings_version = bindingVersion
+  if (bindings === undefined) return ''
+  if (!record(bindings) || !record(bindings.p1) || !record(bindings.p2)) return ''
+  const slots = Object.entries(previousInput).flatMap(([player, keys]) =>
+    Object.keys(keys).map(action => ({player,action,code:bindings[player][action]})))
+  if (slots.every(({player,action,code}) => code === previousInput[player][action])) {
+    profile.settings.bindings = structuredClone(defaults)
+    return '已将原默认键位更新为本版布局。'
+  }
+
+  // Reserve all existing non-conflicting choices before repairing any aliases.
+  // Exact duplicates were illegal even in the old format: handle those with
+  // the existing damaged-save recovery instead of hiding unrelated corruption.
+  if (slots.some(slot => typeof slot.code !== 'string') || new Set(slots.map(s => s.code)).size !== slots.length) return ''
+  const used = new Set()
+  const conflicts = []
+  for (const slot of slots) {
+    const key = canonicalKeyCode(slot.code)
+    if (used.has(key)) conflicts.push(slot)
+    used.add(key)
+  }
+  if (!conflicts.length) return ''
+  const defaultKeys = slots.map(({player,action}) => defaults[player][action])
+  for (const {player,action} of conflicts) {
+    const candidates = [defaults[player][action], ...Object.values(defaults[player]), ...defaultKeys]
+    const replacement = candidates.find(key => !used.has(canonicalKeyCode(key)))
+    // The validated default layout has one distinct key per slot, so each
+    // colliding slot has at least one free key after reserving the others.
+    bindings[player][action] = replacement
+    used.add(canonicalKeyCode(replacement))
+  }
+  return '数字行与小键盘现在通用，已调整重复键位。可在设置中查看。'
+}
+
 function decode(raw, config) {
   if (raw === null) return null
   try {
     const p = JSON.parse(raw)
-    return decodedProfileMatches(p,config) ? p : null
+    if (!record(p) || (p.bindings_version !== undefined && ![1,bindingVersion].includes(p.bindings_version))) return null
+    const notice = p.bindings_version === bindingVersion ? '' : migrateBindings(p, config.input)
+    if (!decodedProfileMatches(p,config)) return null
+    const legacy = p.schema_version === 1
+    if (!legacy && config.roster.every(id => Object.hasOwn(p.levels,id))) return {profile:p,notice}
+    // Project old saves on read. The next successful transaction persists the
+    // additions under the same origin-wide lock as rewards and upgrades.
+    if (legacy && p.settings.selectedCharacter) {
+      p.legacySelectedCharacter = p.settings.selectedCharacter
+      p.settings.selectedCharacter = config.economy.initialCharacter
+    }
+    return {profile:{...p, schema_version:2, config_version:config.version,
+      levels:{...initialProfile(config).levels,...p.levels}},notice}
   } catch { return null }
 }
 
@@ -89,11 +150,11 @@ export function createProgressStore(config, storage = browserStorage()) {
     const fresh = initialProfile(config)
     try {
       const raw = storage.getItem(STORE_KEY)
-      const profile = decode(raw, config)
-      if (profile) return {profile,notice:'',blocked:false}
+      const current = decode(raw, config)
+      if (current) return {...current,blocked:false}
       const backup = storage.getItem(BACKUP_KEY)
       const restored = decode(backup,config)
-      if (restored) return {profile:restored,notice:'存档异常，已从上一次有效备份恢复。',blocked:false}
+      if (restored) return {...restored,notice:'存档异常，已从上一次有效备份恢复。' + restored.notice,blocked:false}
       if (raw === null && backup === null) return {profile:fresh,notice:'',blocked:false}
       return {profile:fresh,notice:'存档与备份无法读取，已保留原数据并暂停保存。',blocked:true}
     } catch {
@@ -166,7 +227,7 @@ export function createProgressStore(config, storage = browserStorage()) {
     /** Buy a single level only if the account still displays the requested starting level. */
     upgrade(characterId, expectedLevel) {
       return write(p => {
-        if (!Object.hasOwn(p.levels,characterId)) return {changed:false,notice:'角色尚未解锁。'}
+        if (!config.roster.includes(characterId) || !Object.hasOwn(p.levels,characterId)) return {changed:false,notice:'当前无法培养此角色。'}
         const level = p.levels[characterId]
         if (level !== expectedLevel) return {changed:false,notice:'等级已更新。'}
         const cost = config.economy.levelCosts[level-1]
@@ -183,7 +244,7 @@ export function createProgressStore(config, storage = browserStorage()) {
         if (!record(patch) || Object.keys(patch).some(key=>!['volume','reduceEffects','bindings','selectedCharacter'].includes(key)))
           return {changed:false,notice:'设置项目无效。'}
         const settings = {...p.settings,...patch}
-        if (!validSettings(settings,p.levels,config)) return {changed:false,notice:'设置值或键位无效。'}
+        if (!validSettings(settings,p.levels,config.roster)) return {changed:false,notice:'设置值或键位无效。'}
         p.settings = settings
         return {changed:true}
       })

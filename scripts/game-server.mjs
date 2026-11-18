@@ -5,7 +5,7 @@ import {resolve, extname, sep} from 'node:path';
 
 const root = fileURLToPath(new URL('../src/game/', import.meta.url));
 const port = Number(process.env.PORT || 4173);
-const mime = {'.html':'text/html', '.mjs':'text/javascript', '.css':'text/css', '.json':'application/json', '.svg':'image/svg+xml', '.png':'image/png', '.webp':'image/webp', '.ico':'image/x-icon'};
+const mime = {'.html':'text/html', '.mjs':'text/javascript', '.css':'text/css', '.json':'application/json', '.svg':'image/svg+xml', '.png':'image/png', '.webp':'image/webp', '.ico':'image/x-icon', '.mp3':'audio/mpeg'};
 
 http.createServer(async (req, res) => {
   try {
@@ -18,7 +18,7 @@ http.createServer(async (req, res) => {
     const type = mime[extname(path)];
     if (!path.startsWith(resolve(root) + sep) || !type) throw new Error('missing');
     const body = await readFile(path);
-    res.writeHead(200, {'Content-Type': type + (type.startsWith('image/') ? '' : '; charset=utf-8'), 'Cache-Control':'no-store'});
+    res.writeHead(200, {'Content-Type': type + (type.startsWith('text/') || type === 'application/json' ? '; charset=utf-8' : ''), 'Cache-Control':'no-store'});
     res.end(req.method === 'HEAD' ? undefined : body);
   } catch {
     res.writeHead(404).end('Not found');

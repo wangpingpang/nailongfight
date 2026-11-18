@@ -1,3 +1,6 @@
+import {beginModuleCast, expireModuleZones, firstModuleHit, moduleAction,
+  moduleHitCoefficient, placeModuleZones, walkingScale} from './module-combat.mjs'
+
 // T02/T03, MVP specification §§3–7. Time advances exactly one logic frame per step.
 // Free → attack/defense, attack → recovery or validated cancel, hit → stun/down,
 // stun → escape/free, down → getup → free. KO supersedes every transition.
@@ -60,7 +63,7 @@ export function addActor(b, spec) {
     attack: Math.round((competitive ? c.attack : (spec.attack ?? c.attack)) * growth),
     hurtWidth: c.hurtWidth, hurtDepth: c.hurtDepth, facing: spec.facing ?? (spec.team === 1 ? 1 : -1),
     energy: b.config.rules.energyStart, cooldowns: { basic: 0, s1: 0, s2: 0, ult: 0, defend: 0 },
-    comboHits: 0, lockFrames: 0, freeFrames: 0, buffered: null, lastPush: { x: 1, y: 0 },
+    comboHits: 0, lockFrames: 0, freeFrames: 0, mirthUntil: 0, fedUntil: 0, buffered: null, lastPush: { x: 1, y: 0 },
   }
   enter(a, 'IDLE')
   place(b, a, spec.x, spec.y)
@@ -72,7 +75,10 @@ function expire(b, a) {
   if (a.age < a.duration) return
   if (a.state === 'DOWN') enter(a, 'GETUP', b.config.rules.getupFrames)
   else {
-    if (a.state === 'HIT') a.lockFrames = 0
+    if (a.state === 'HIT') {
+      if (b.config.rules.resetComboOnStunExit) resetCombo(a)
+      else a.lockFrames = 0
+    }
     enter(a, 'IDLE')
   }
 }
@@ -87,6 +93,7 @@ function evade(b, a, input) {
   a.cooldowns.defend = escape ? r.escapeCd : r.evadeCd
   if (escape) resetCombo(a)
   enter(a, escape ? 'ESCAPE' : 'EVADE', escape ? r.escapeFrames : r.evadeFrames)
+  b.events.push({type:'evade', sourceId:a.id})
   return true
 }
 
@@ -114,6 +121,7 @@ function castAction(b, a, button, input) {
     originX: a.x, originY: a.y, targetX: clamp(a.x + a.facing * (e.offset ?? 0), 0, cfg.rules.arenaWidth),
     targetY: a.y,
   }
+  beginModuleCast(b, a)
   b.events.push({ type: 'action', sourceId: a.id, actionId: skill.id })
   return true
 }
@@ -168,6 +176,7 @@ function overlaps(shape, a) {
   const dx = Math.abs(a.x - shape.x), dy = Math.abs(a.y - shape.y)
   if (shape.kind === 'rect')
     return dx <= (shape.width + a.hurtWidth) / 2 && dy <= (shape.depth + a.hurtDepth) / 2
+  if (shape.kind === 'semicircle' && (a.x - shape.x) * shape.facing < -a.hurtWidth / 2) return false
   return Math.hypot(Math.max(0, dx - a.hurtWidth / 2), Math.max(0, dy - a.hurtDepth / 2)) <= shape.radius
 }
 
@@ -193,7 +202,7 @@ function moveFighter(b, a, input) {
     const state = vector.x || vector.y ? 'MOVE' : 'IDLE'
     if (a.state !== state) enter(a, state)
   }
-  move(b, a, vector, b.config.characters[a.characterId].speed * (charging ? e.chargeMoveScale : 1) / r.tickRate)
+  move(b, a, vector, b.config.characters[a.characterId].speed * (charging ? e.chargeMoveScale : walkingScale(b, a)) / r.tickRate)
 }
 
 function chargePhase(a, input) {
@@ -231,6 +240,18 @@ function updateAttack(b, a, input, attacks) {
   let p = phase(a.age, s.startup, s.active)
   if (e.type === 'charge') p = chargePhase(a, input)
   if (c.counter) p = phase(a.age, e.counterStartup, e.counterActive)
+  if (a.age === s.startup && ['field','marker','feed','backstep'].includes(e.type)) {
+    b.events.push({type:'activate', sourceId:a.id, actionId:s.id})
+  }
+  const module = moduleAction(b, a, input, p, move)
+  if (module) {
+    if (module.shape && module.phase !== 'recovery') {
+      display(b, a, module.shape, module.phase)
+      if (module.phase === 'active') attacks.push({shape:module.shape, source:a,
+        originX:module.shape.x, originY:module.shape.y, cast:c, coeff:s.coeff})
+    }
+    return
+  }
   if (p === 'recovery') return
   if (e.type === 'parry' && !c.counter) {
     display(b, a, rect(a.x, a.y, c.facing, e.length, e.depth), p === 'active' ? 'guard' : 'warning')
@@ -250,8 +271,9 @@ function updateAttack(b, a, input, attacks) {
   }
   if (e.type === 'delayed') {
     const x = clamp(a.x + c.facing * e.offset, 0, b.config.rules.arenaWidth)
-    if (p === 'warning') display(b, a, circle(x, a.y, e.radius), p)
-    else if (!c.spawned) {
+    if (p === 'warning') {
+      if (!e.warnOnSpawnOnly) display(b, a, circle(x, a.y, e.radius), p)
+    } else if (!c.spawned) {
       c.spawned = true
       b.entities = b.entities.filter(item => !(item.ownerId === a.id && item.cast.skill.id === s.id))
       b.entities.push({ kind: 'delayed', ownerId: a.id, team: a.team, cast: c, x, y: a.y,
@@ -277,6 +299,7 @@ function updateAttack(b, a, input, attacks) {
 
 function updateEntities(b, attacks) {
   for (const e of b.entities) {
+    if (e.kind === 'field' || e.kind === 'marker') continue
     const source = b.actors.find(a => a.id === e.ownerId)
     if (!source || source.state === 'DEAD') { e.spent = true; continue }
     const age = b.frame - e.born
@@ -296,6 +319,43 @@ function updateEntities(b, attacks) {
     display(b, source, shape, 'active')
     attacks.push({ shape, source, originX, originY: e.y, cast: e.cast, coeff: e.coeff, entity: e })
   }
+}
+
+// Use the same pre-knockback geometry as collision detection. For a rectangle,
+// choose the point in the overlap nearest the incoming attack. For a circle,
+// its nearest point on the hurtbox is guaranteed to be within its radius.
+function contactSnapshot(attack, target) {
+  const {shape, cast, entity} = attack
+  const minX = target.x - target.hurtWidth / 2
+  const maxX = target.x + target.hurtWidth / 2
+  const minY = target.y - target.hurtDepth / 2
+  const maxY = target.y + target.hurtDepth / 2
+  let x, y
+  if (shape.kind === 'rect') {
+    x = clamp(attack.originX, Math.max(minX,shape.x-shape.width/2), Math.min(maxX,shape.x+shape.width/2))
+    y = clamp(attack.originY, Math.max(minY,shape.y-shape.depth/2), Math.min(maxY,shape.y+shape.depth/2))
+  } else {
+    x = clamp(shape.x, minX, maxX)
+    y = clamp(shape.y, minY, maxY)
+  }
+  const radial = shape.kind === 'circle' && entity?.kind !== 'projectile'
+  const dir = radial ? Math.sign(target.x - shape.x) || cast.facing : cast.facing
+  return {x, y, dir, targetX:target.x, targetY:target.y}
+}
+
+// A grade describes the attack as landed. Remaining HP and combo damage scaling
+// cannot downgrade a finishing blow. Area bonuses are resolved separately per target.
+function impactGrade(hit) {
+  const {cast, coeff} = hit
+  const skill = cast.skill
+  if (skill.kind === 'ult') return 'ultimate'
+  if (skill.kind === 'basic') return ['light','medium','heavy'][Math.min(cast.basicIndex,2)]
+  if (cast.counter || skill.knockdown || coeff > skill.coeff) return 'heavy'
+  return 'medium'
+}
+
+function confirmedImpact(hit, impact) {
+  return {...hit.contact, impact, sourceId:hit.source.id, targetId:hit.target.id, skillId:hit.cast.skill.id, castId:hit.cast.id}
 }
 
 function impactsSnapshot(b, attacks) {
@@ -322,18 +382,22 @@ function impactsSnapshot(b, attacks) {
       const push = (dx || dy) ? direction(dx, dy) : { x: cast.facing, y: 0 }
       const front = entity?.kind === 'projectile' ? cast.facing === -a.facing :
         (dx === 0 ? cast.facing === -a.facing : sign(-dx) === a.facing)
-      impacts.push({ ...attack, target: a, push, knockback, guard: guardReady && front && cast.skill.kind === 'basic' ? guard : null })
+      impacts.push({
+        ...attack, target: a, push, knockback,
+        contact: contactSnapshot(attack, a),
+        coeff: moduleHitCoefficient(b, attack, a, passive),
+        guard: guardReady && front && cast.skill.kind === 'basic' ? guard : null,
+      })
     }
   }
   return impacts.sort((one, two) => byId(one.target, two.target) || one.cast.id - two.cast.id)
 }
 
-function counter(b, a, c) {
+function counter(a, c) {
   const e = c.skill.effect
   c.counter = true
   a.age = 0
   a.duration = e.counterStartup + e.counterActive + e.counterRecovery
-  b.events.push({ type: 'parry', sourceId: a.id, x: a.x, y: a.y })
 }
 
 function knockDown(b, a) {
@@ -357,7 +421,8 @@ function settleImpact(b, hit) {
   if (entity?.kind === 'projectile') entity.spent = true
   c.seen.add(a.id)
   if (guard && !guard.counter && a.cast === guard) {
-    counter(b, a, guard)
+    counter(a, guard)
+    b.events.push({type:'parry', ...confirmedImpact(hit, 'guard'), defenderId:a.id})
     return
   }
   const s = c.skill
@@ -368,7 +433,10 @@ function settleImpact(b, hit) {
   a.freeFrames = 0
   a.lastPush = hit.push
   a.buffered = null
-  c.firstHit ??= b.frame
+  if (c.firstHit === null) {
+    c.firstHit = b.frame
+    firstModuleHit(b, source, c)
+  }
   if (s.kind !== 'ult') {
     gainEnergy(a, damage * r.hurtEnergyRate, r.energyMax)
     if (!c.credited) {
@@ -376,9 +444,11 @@ function settleImpact(b, hit) {
       c.credited = true
     }
   }
-  b.events.push({ type: 'hit', targetId: a.id, sourceId: source.id, damage, x: a.x, y: a.y, actionId: s.id })
+  b.events.push({type:'hit', ...confirmedImpact(hit, impactGrade(hit)), damage, actionId:s.id})
   if (a.hp === 0) {
     enter(a, 'DEAD')
+    a.mirthUntil = 0
+    a.fedUntil = 0
     b.events.push({ type: 'ko', targetId: a.id, x: a.x, y: a.y })
     return
   }
@@ -414,12 +484,16 @@ export function stepBattle(b, intents = {}) {
   b.events = []
   b.telegraphs = []
   const attacks = []
+  expireModuleZones(b)
   for (const a of b.actors) {
     if (a.state === 'DEAD') continue
     expire(b, a)
+    if (a.mirthUntil <= b.frame) a.mirthUntil = 0
+    if (a.fedUntil <= b.frame) a.fedUntil = 0
     for (const button of priority) a.cooldowns[button] = Math.max(0, a.cooldowns[button] - 1)
     applyInput(b, a, intents[a.id] ?? {})
   }
+  placeModuleZones(b)
   for (const a of b.actors) {
     if (a.state === 'DEAD') continue
     const input = intents[a.id] ?? {}

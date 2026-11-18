@@ -1,10 +1,12 @@
-import {loadConfig, validateBindings} from './config.mjs';
+import {loadConfig, validateBindings, resolveScene} from './config.mjs';
 import {createInput, createClock} from './controls.mjs';
 import {createBattle, stepBattle} from './combat.mjs';
 import {makeAI, startStage, tickStage} from './stages.mjs';
 import {createProgressStore} from './progress.mjs';
 import {createUI} from './ui.mjs';
 import {drawArena, recordBattleFeedback} from './art.mjs';
+import {createImpactAudio} from './impact-audio.mjs';
+import {impactHoldFrames} from './impact-timing.mjs';
 
 const root = document.getElementById('app');
 let config, store, profile, input, clock, battle, choice;
@@ -12,8 +14,8 @@ let phase = 'menu';
 let generation = 0;
 let controllers = new Map();
 let resumeAt = 0;
-let sound;
-let audioAt = -1;
+const audio = createImpactAudio();
+let holdRemaining = 0;
 let settings = {};
 const ui = createUI(root, {
   onStart: startMatch,
@@ -23,7 +25,7 @@ const ui = createUI(root, {
     applyProfile(await store.updateSettings(next));
   },
   onSelectCharacter: async id => {
-    if (profile.levels[id]) applyProfile(await store.updateSettings({selectedCharacter:id}));
+    if (config.roster.includes(id) && profile.levels[id]) applyProfile(await store.updateSettings({selectedCharacter:id}));
   },
   onPause: pause,
   onResume: resume,
@@ -39,6 +41,7 @@ const ui = createUI(root, {
 function applyProfile(outcome) {
   profile = outcome.profile;
   settings = {...profile.settings};
+  audio.setVolume(settings.volume ?? 0.65);
   try {
     validateBindings(settings.bindings ?? config.input);
   } catch {
@@ -56,45 +59,21 @@ function matchId() {
   return Array.from(words, w => w.toString(16).padStart(8, '0')).join('');
 }
 
-function activateAudio() {
-  try {
-    if (!sound && window.AudioContext) sound = new AudioContext();
-    if (sound?.state === 'suspended') sound.resume().catch(() => {});
-  } catch { /* Browsers without audio can still play. */ }
-}
-
-function playImpact() {
-  const volume = settings.volume ?? 0.65;
-  if (!sound || sound.state !== 'running' || volume <= 0 || !battle.events.some(e => e.type === 'hit')) return;
-  if (sound.currentTime - audioAt < 0.045) return;
-  audioAt = sound.currentTime;
-  const oscillator = sound.createOscillator();
-  const gain = sound.createGain();
-  oscillator.type = 'triangle';
-  oscillator.frequency.setValueAtTime(180, audioAt);
-  oscillator.frequency.exponentialRampToValueAtTime(55, audioAt + 0.075);
-  gain.gain.setValueAtTime(volume * 0.11, audioAt);
-  gain.gain.exponentialRampToValueAtTime(0.001, audioAt + 0.085);
-  oscillator.connect(gain);
-  gain.connect(sound.destination);
-  oscillator.start(audioAt);
-  oscillator.stop(audioAt + 0.09);
-  oscillator.onended = () => { oscillator.disconnect(); gain.disconnect(); };
-}
-
 async function startMatch(request) {
   if (!request || phase === 'loading' || phase === 'settling') return;
   const serial = ++generation;
   const previousPhase = phase;
   phase = 'loading';
   input?.setActive(false);
-  activateAudio();
+  audio.reset();
+  audio.activate();
   try {
     const latest = await loadConfig();
     if (serial !== generation) return;
     const {mode, characterId, stageId} = request;
+    const scene = resolveScene(latest, request.sceneId);
     if (!['vs_ai','pve','pvp','training'].includes(mode)) throw new Error('对战模式不可用');
-    if (!latest.characters[characterId]?.playable) throw new Error('请选择可出战角色');
+    if (!latest.roster.includes(characterId)) throw new Error('请选择可出战角色');
     config = latest;
     store = createProgressStore(config);
     const saved = applyProfile(store.read());
@@ -108,11 +87,17 @@ async function startMatch(request) {
     const actors = [actor];
     if (mode !== 'pve') {
       const opponentId = request.opponentId || characterId;
-      if (!config.characters[opponentId]?.playable) throw new Error('请选择有效对手');
+      if (!config.roster.includes(opponentId)) throw new Error('请选择有效对手');
       actors.push({id:'p2',team:2,characterId:opponentId,x:config.spawn.opponentX, y:config.spawn.opponentY,facing:-1,level:1});
     }
+    const audibleFighters = actors.map(a => a.characterId);
+    if (mode === 'pve') audibleFighters.push(...config.stages[stageId].waves.flat().map(enemy => enemy.characterId));
+    await audio.prepare(config.fighterAudio, audibleFighters);
+    if (serial !== generation) return;
     battle = createBattle(config, {id:matchId(), mode, actors});
-    choice = {...request};
+    holdRemaining = 0;
+    Object.defineProperty(battle, 'sceneId', {value:scene.id, enumerable:true});
+    choice = {...request, sceneId:scene.id};
     controllers = new Map();
     if (mode === 'pve') startStage(battle, stageId);
     clock = createClock(config.rules.tickRate, tick);
@@ -131,6 +116,14 @@ async function startMatch(request) {
 
 function tick() {
   if (phase !== 'playing') return;
+  // Keep input edges queued until the first live frame. Timers, AI and damage
+  // advance together; only presentation ages while the two fighters hold their poses.
+  if (holdRemaining > 0) {
+    holdRemaining--;
+    recordBattleFeedback(battle, true);
+    if (battle.result && holdRemaining === 0) void settle();
+    return;
+  }
   const intents = {p1:input.read('p1')};
   if (battle.mode === 'pvp') intents.p2 = input.read('p2');
   else if (battle.mode !== 'training') {
@@ -143,11 +136,13 @@ function tick() {
   stepBattle(battle, intents);
   recordBattleFeedback(battle);
   if (battle.mode === 'pve') tickStage(battle);
-  playImpact();
-  if (battle.result) void settle();
+  audio.play(battle, settings.volume ?? 0.65);
+  holdRemaining = impactHoldFrames(battle.events, battle.config.rules.impactHoldFrames);
+  if (battle.result && holdRemaining === 0) void settle();
 }
 
 async function settle() {
+  const announce = phase !== 'result';
   phase = 'settling';
   clock.reset();
   input.setActive(false);
@@ -167,12 +162,18 @@ async function settle() {
     receipt = {...receipt,notice:err.message || '结算存档写入失败'};
   }
   if (serial !== generation) return;
+  if (announce && !document.hidden && document.hasFocus?.() !== false) audio.victory(finished);
   phase = 'result';
   ui.showResult(finished, receipt);
 }
 
 function pause() {
+  audio.reset();
   if (phase !== 'playing' && phase !== 'countdown') return;
+  if (battle?.result) {
+    void settle();
+    return;
+  }
   phase = 'paused';
   input.setActive(false);
   clock.reset();
@@ -181,6 +182,7 @@ function pause() {
 
 function resume() {
   if (phase !== 'paused' || document.hidden) return;
+  audio.activate();
   phase = 'countdown';
   resumeAt = performance.now() + config.rules.resumeSeconds * 1000;
   ui.showCountdown(Math.ceil(config.rules.resumeSeconds));
@@ -191,6 +193,8 @@ function exitMatch() {
   phase = 'menu';
   input?.setActive(false);
   clock?.reset();
+  audio.reset();
+  holdRemaining = 0;
   battle = null;
   controllers.clear();
   ui.home();

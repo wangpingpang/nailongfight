@@ -1,14 +1,15 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
-import {validateConfig} from '../../src/game/config.mjs';
+import {loadConfig} from '../../src/game/config.mjs';
 import {createBattle, stepBattle} from '../../src/game/combat.mjs';
 import {makeAI, startStage, tickStage} from '../../src/game/stages.mjs';
 import {createProgressStore} from '../../src/game/progress.mjs';
 
-const cfg = validateConfig(JSON.parse(await readFile(new URL('../../src/game/data/game.json', import.meta.url))));
+const cfg = await loadConfig(async file => ({ok:true,json:async () => JSON.parse(await readFile(file))}));
+const challenger = 'laughing';
 function playStage(id, profile) {
-  const player = {id:'p1', team:1, characterId:'shell', level:profile.levels.shell, x:cfg.spawn.playerX, y:cfg.spawn.playerY};
+  const player = {id:'p1', team:1, characterId:challenger, level:profile.levels[challenger], x:cfg.spawn.playerX, y:cfg.spawn.playerY};
   const battle = createBattle(cfg, {id, mode:'pve', actors:[player]});
   startStage(battle, id);
   const hero = battle.actors[0];
@@ -48,6 +49,11 @@ test('a fresh campaign clears all three stages using public inputs, saves and re
   for (const id of ['stage_01','stage_02','stage_03']) {
     assert.ok(profile.unlockedStages.includes(id));
     const b = playStage(id,profile);
+    if (id === 'stage_03') {
+      const boss = b.actors.find(a => a.team === 2 && a.characterId === 'sacred');
+      assert.ok(boss, 'the playable campaign must reach the module boss');
+      assert.equal(boss.hp,0);
+    }
     const result = {id:b.id,mode:b.mode,winner:b.result.winner,stageId:id};
     const outcome = await store.settle(result);
     profile = outcome.profile;
@@ -55,9 +61,9 @@ test('a fresh campaign clears all three stages using public inputs, saves and re
     assert.equal(outcome.receipt.points,cfg.stages[id].firstReward);
     assert.equal((await store.settle(result)).profile.points,profile.points);
     if (id === 'stage_01') {
-      assert.equal(profile.levels.cloud,1);
-      profile = (await store.upgrade('shell',profile.levels.shell)).profile;
-      assert.equal(profile.levels.shell,2);
+      assert.deepEqual(Object.keys(profile.levels).sort(), [...cfg.roster].sort());
+      profile = (await store.upgrade(challenger,profile.levels[challenger])).profile;
+      assert.equal(profile.levels[challenger],2);
       assert.equal(profile.points,0);
       replay = {...result,id:'fresh-repeat'};
     }

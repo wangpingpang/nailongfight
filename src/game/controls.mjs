@@ -1,4 +1,4 @@
-import { validateBindings } from './config.mjs';
+import { canonicalKeyCode, validateBindings } from './config.mjs';
 
 /**
  * Translate physical keyboard codes into actions for two independent actors.
@@ -9,7 +9,8 @@ export function createInput(initialBindings, target = window) {
   let bindings;
   let assigned;
   let active = false;
-  const held = new Set();
+  // Each logical binding stays held until every physical key for it is up.
+  const held = new Map();
   const pressed = new Set();
 
   function clear() {
@@ -19,7 +20,10 @@ export function createInput(initialBindings, target = window) {
 
   function setBindings(next) {
     validateBindings(next);
-    bindings = {p1: {...next.p1}, p2: {...next.p2}};
+    const normalize = map => Object.fromEntries(
+      Object.entries(map).map(([action, code]) => [action, canonicalKeyCode(code)])
+    );
+    bindings = {p1:normalize(next.p1), p2:normalize(next.p2)};
     assigned = new Set([...Object.values(bindings.p1), ...Object.values(bindings.p2)]);
     clear();
   }
@@ -29,17 +33,25 @@ export function createInput(initialBindings, target = window) {
   }
 
   function keydown(event) {
-    if (!active || !assigned.has(event.code) || userShortcut(event)) return;
+    const code = canonicalKeyCode(event.code);
+    if (!active || !assigned.has(code) || userShortcut(event)) return;
     event.preventDefault();
-    if (event.repeat || held.has(event.code)) return;
-    held.add(event.code);
-    pressed.add(event.code);
+    if (event.repeat) return;
+    if (!held.has(code)) {
+      held.set(code, new Set());
+      pressed.add(code);
+    }
+    held.get(code).add(event.code);
   }
 
   function keyup(event) {
-    if (!active || !assigned.has(event.code)) return;
+    const code = canonicalKeyCode(event.code);
+    if (!active || !assigned.has(code)) return;
     if (!userShortcut(event)) event.preventDefault();
-    held.delete(event.code);
+    const keys = held.get(code);
+    if (!keys) return;
+    keys.delete(event.code);
+    if (!keys.size) held.delete(code);
   }
 
   const document = target.document;

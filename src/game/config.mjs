@@ -1,3 +1,5 @@
+import {buildFighterAnimation} from './fighter-animation.mjs'
+
 const actions = ['up', 'down', 'left', 'right', 'basic', 's1', 's2', 'defend', 'ult']
 
 function requireField(condition, path, description) {
@@ -40,7 +42,12 @@ function reference(records, id, path) {
   return records[id]
 }
 
-/** Validate both players' physical key bindings, including collisions with global controls. */
+/** Both physical number banks select the same bindings for the six game number keys. */
+export function canonicalKeyCode(code) {
+  return typeof code === 'string' && /^Numpad[1-6]$/.test(code) ? 'Digit' + code.at(-1) : code
+}
+
+/** Validate both players' physical key bindings, including shared number keys and global controls. */
 export function validateBindings(bindings) {
   object(bindings, 'input')
   const used = new Set(['Escape', 'Tab', 'ControlLeft', 'ControlRight',
@@ -51,8 +58,9 @@ export function validateBindings(bindings) {
       const path = `input.${player}.${action}`
       const key = keys[action]
       requireField(typeof key === 'string' && /^[A-Z][A-Za-z0-9]+$/.test(key), path, '需要有效的 KeyboardEvent.code')
-      requireField(!used.has(key), path, '按键已占用或由浏览器保留')
-      used.add(key)
+      const code = canonicalKeyCode(key)
+      requireField(!used.has(code), path, '按键已占用或由浏览器保留')
+      used.add(code)
     }
   }
   return bindings
@@ -71,6 +79,11 @@ function checkRules(r) {
   requireField(r.evadeInvulnFrames <= r.evadeFrames, 'rules.evadeInvulnFrames', '无敌时间超过动作时长')
   requireField(Array.isArray(r.comboScale) && r.comboScale.length === r.comboHitLimit, 'rules.comboScale', '每个连击序号需有倍率')
   r.comboScale.forEach((scale, i) => number(scale, `rules.comboScale[${i}]`))
+  if (r.impactHoldFrames !== undefined) {
+    const path = 'rules.impactHoldFrames'
+    const durations = object(r.impactHoldFrames, path)
+    numbers(durations, ['light','medium','heavy','ultimate','guard'], path, 0, true)
+  }
 }
 
 function checkSkill(s, path) {
@@ -82,9 +95,21 @@ function checkSkill(s, path) {
   requireField(typeof s.knockdown === 'boolean', path + '.knockdown', '需要布尔值')
   const ep = path + '.effect'
   const e = object(s.effect, ep)
-  requireField(['melee','dash','parry','projectile','charge','delayed','leap'].includes(e.type), ep + '.type', '未知效果组件')
+  requireField(['melee','dash','parry','projectile','charge','delayed','leap','backstep','semicircle','circle','field','marker','slide','feed'].includes(e.type), ep + '.type', '未知效果组件')
   if (['melee','dash','parry'].includes(e.type)) numbers(e, ['length','depth'], ep, Number.EPSILON)
-  if (e.type === 'dash') number(e.distance, ep + '.distance')
+  if (e.type === 'dash' || e.type === 'backstep') number(e.distance, ep + '.distance')
+  if (['semicircle','circle','field','slide'].includes(e.type)) number(e.radius, ep + '.radius', Number.EPSILON)
+  if (['circle','field','marker'].includes(e.type)) number(e.offset, ep + '.offset')
+  if (['field','marker'].includes(e.type)) number(e.life, ep + '.life', 1, true)
+  if (e.type === 'field') {
+    number(e.slow, ep + '.slow')
+    requireField(e.slow <= 1, ep + '.slow', '减速倍率超过 1')
+  }
+  if (e.type === 'slide') {
+    number(e.distance, ep + '.distance', Number.EPSILON)
+    number(e.maxDistance, ep + '.maxDistance', e.distance)
+    number(e.slideFrames, ep + '.slideFrames', 1, true)
+  }
   if (e.type === 'parry') {
     numbers(e, ['counterStartup','counterRecovery'], ep, 0, true)
     number(e.counterActive, ep + '.counterActive', 1, true)
@@ -105,8 +130,14 @@ function checkSkill(s, path) {
     number(e.offset, ep + '.offset')
     number(e.radius, ep + '.radius', Number.EPSILON)
   }
-  if (e.type === 'delayed') number(e.delay, ep + '.delay', 0, true)
+  if (e.type === 'delayed') {
+    number(e.delay, ep + '.delay', 0, true)
+    if (e.warnOnSpawnOnly !== undefined)
+      requireField(typeof e.warnOnSpawnOnly === 'boolean', ep + '.warnOnSpawnOnly', '需要布尔值')
+  }
   if (e.type === 'leap') {
+    if (e.landAtBody !== undefined)
+      requireField(typeof e.landAtBody === 'boolean', ep + '.landAtBody', '需要布尔值')
     number(e.moveFrames, ep + '.moveFrames', 1, true)
     requireField(e.moveFrames <= s.startup, ep + '.moveFrames', '跃进必须在前摇内完成')
   }
@@ -115,9 +146,34 @@ function checkSkill(s, path) {
 function checkPassives(config) {
   table(config.passives, 'passives', (p, path) => {
     words(p, ['name','description'], path)
-    requireField(['lowHpKnockback','fullChargeSpeed'].includes(p.type), path + '.type', '未知被动类型')
+    requireField(['lowHpKnockback','fullChargeSpeed','beat','mirth','resonance','arrival','fed','hitRefund'].includes(p.type), path + '.type', '未知被动类型')
     reference(config.skills, p.skill, path + '.skill')
-    number(p.multiplier, path + '.multiplier', Number.EPSILON)
+    if (['lowHpKnockback','fullChargeSpeed'].includes(p.type)) number(p.multiplier, path + '.multiplier', Number.EPSILON)
+    if (['beat','mirth','resonance','fed'].includes(p.type)) number(p.bonusCoeff, path + '.bonusCoeff')
+    if (p.type === 'beat') {
+      number(p.period, path + '.period', 1, true)
+      number(p.window, path + '.window', 0, true)
+      requireField(2 * p.window < p.period, path + '.window', '拍点窗口应小于周期')
+    }
+    if (p.type === 'mirth') {
+      reference(config.skills, p.grantSkill, path + '.grantSkill')
+      number(p.duration, path + '.duration', 1, true)
+      number(p.boostRadius, path + '.boostRadius', Number.EPSILON)
+    }
+    if (p.type === 'resonance') {
+      const field = reference(config.skills, p.fieldSkill, path + '.fieldSkill')
+      requireField(field.effect.type === 'field', path + '.fieldSkill', '共鸣需要光环技能')
+    }
+    if (p.type === 'fed') {
+      const grant = reference(config.skills, p.grantSkill, path + '.grantSkill')
+      requireField(grant.effect.type === 'feed', path + '.grantSkill', '饱腹状态需要蓄能技能')
+      number(p.duration, path + '.duration', 1, true)
+      number(p.speedMultiplier, path + '.speedMultiplier', 1)
+    }
+    if (p.type === 'arrival' || p.type === 'hitRefund') {
+      requireField(['s1','s2'].includes(p.reduceSlot), path + '.reduceSlot', '需要普通技能槽')
+      number(p.reduceFrames, path + '.reduceFrames', 1, true)
+    }
     if (p.type === 'lowHpKnockback') {
       number(p.threshold, path + '.threshold')
       requireField(p.threshold <= 1, path + '.threshold', '生命比例应当在 0 至 1 之间')
@@ -132,7 +188,8 @@ function checkCharacter(c, path, config) {
     path, '受击框超出场地')
   requireField(typeof c.playable === 'boolean' && typeof c.canDefend === 'boolean', path, '角色权限需要布尔值')
   reference(config.assets, c.asset, path + '.asset')
-  requireField(['shell','cloud','melee','ranged'].includes(c.ai), path + '.ai', '未知 AI 行为')
+  reference(config.ai, c.ai, path + '.ai')
+  requireField(typeof config.ai[c.ai] === 'object', path + '.ai', 'AI 行为需要参数表')
   requireField(Array.isArray(c.basic) && c.basic.length > 0, path + '.basic', '必须配置普攻')
   for (const skill of c.basic) {
     requireField(reference(config.skills, skill, path + '.basic').kind === 'basic', path + '.basic', '必须引用普攻')
@@ -142,9 +199,13 @@ function checkCharacter(c, path, config) {
     const skill = reference(config.skills, c[slot], path + '.' + slot)
     requireField(skill.kind === (slot === 'ult' ? 'ult' : 'skill'), path + '.' + slot, '技能槽与类型不符')
   }
+  if (c.animation !== undefined) reference(config.animations, c.animation, path + '.animation')
   if (c.passive !== null || c.playable) {
     const passive = reference(config.passives, c.passive, path + '.passive')
-    requireField([...c.basic,c.s1,c.s2,c.ult].includes(passive.skill), path + '.passive', '被动影响了角色外的技能')
+    const kit = [...c.basic,c.s1,c.s2,c.ult]
+    for (const key of ['skill','grantSkill','fieldSkill']) {
+      if (passive[key] !== undefined) requireField(kit.includes(passive[key]), path + '.passive', '被动引用了角色外的技能')
+    }
   }
 }
 
@@ -219,6 +280,135 @@ function checkAi(ai) {
   for (const id of ['ranged','cloud']) requireField(ai[id].keepMin <= ai[id].keepMax, 'ai.' + id, '走位范围上下限颠倒')
 }
 
+
+const r1RequiredActions = ['idle','move','evade','escape','hit','down','getup','death','basic1','basic2','basic3','block','skill1','skill2','ult','victory']
+const requiredActionIds = ['idle','run','basic','evade','s1','s2','ult','hit','escape','down','getup','defeat']
+
+function checkFighterModule(config) {
+  const {roleModule, roster, characters, assets, animations, economy} = config
+  words(object(roleModule, 'roleModule'), ['version','name','sourceCommit','rightsStatus','tuningNote'], 'roleModule')
+  requireField(Array.isArray(roster) && roster.length && new Set(roster).size === roster.length,
+    'roster', '出场名单必须非空且无重复')
+  for (const id of roster) {
+    const fighter = reference(characters, id, 'roster')
+    requireField(fighter.playable, 'roster', '出场名单包含不可玩角色')
+    numbers(config.ai[fighter.ai], ['meleeRange','approachRange'], 'ai.' + fighter.ai, Number.EPSILON)
+    if (fighter.presentation === 'procedural') {
+      words(object(fighter.metadata, 'characters.' + id + '.metadata'), ['sourceName','sourceVersion'], 'characters.' + id + '.metadata')
+    } else if (fighter.presentation !== 'sample') {
+      reference(animations, fighter.animation, 'characters.' + id + '.animation')
+    }
+  }
+  requireField(Array.isArray(economy.initialCharacters) && economy.initialCharacters.includes(economy.initialCharacter)
+    && economy.initialCharacters.every(id => roster.includes(id)), 'economy.initialCharacters', '初始出战角色不属于出场名单')
+  if (Object.keys(object(animations, 'animations')).length === 0) return
+  table(animations, 'animations', (clip, path) => {
+    reference(assets, clip.prototype, path + '.prototype')
+    object(clip.sheets, path + '.sheets')
+    if (clip.cell) {
+      requireField(Array.isArray(clip.cell) && clip.cell.length === 2, path + '.cell', '需要帧宽和帧高')
+      requireField(Array.isArray(clip.pivot) && clip.pivot.length === 2, path + '.pivot', '需要脚底锚点')
+      for (let axis = 0; axis < 2; axis++) {
+        number(clip.cell[axis], path + '.cell[' + axis + ']', 1, true)
+        number(clip.pivot[axis], path + '.pivot[' + axis + ']', 0, true)
+        requireField(clip.pivot[axis] <= clip.cell[axis], path + '.pivot', '锚点超出画格')
+      }
+    }
+    for (const key of clip.cell ? ['A','B','C','D'] : ['A','B','C']) reference(assets, clip.sheets[key], path + '.sheets.' + key)
+    numbers(clip, ['rows','columns'], path, 1, true)
+    requireField(Array.isArray(clip.actions), path + '.actions', '需要动作列表')
+    const ids = new Set()
+    for (const [index, action] of clip.actions.entries()) {
+      const ap = path + '.actions[' + index + ']'
+      object(action, ap)
+      words(action, ['id','label','sheet'], ap)
+      requireField(!ids.has(action.id), ap + '.id', '动作 ID 重复')
+      ids.add(action.id)
+      reference(clip.sheets, action.sheet, ap + '.sheet')
+      number(action.row, ap + '.row', 0, true)
+      requireField(action.row < clip.rows, ap + '.row', '超出图集行数')
+      requireField(Array.isArray(action.columns) && action.columns.length > 0, ap + '.columns', '动作必须含有关键姿态')
+      requireField(Array.isArray(action.durations) && action.durations.length === action.columns.length,
+        ap + '.durations', '每个姿态需要逻辑帧时长')
+      requireField(typeof action.loop === 'boolean', ap + '.loop', '需要循环标记')
+      for (const [j, column] of action.columns.entries()) {
+        number(column, ap + '.columns[' + j + ']', 0, true)
+        requireField(column < clip.columns, ap + '.columns[' + j + ']', '超出图集列数')
+        number(action.durations[j], ap + '.durations[' + j + ']', clip.cell && action.skillId && j !== 2 ? 0 : 1, true)
+      }
+    }
+    const required = clip.cell ? r1RequiredActions : requiredActionIds
+    requireField(required.every(id => ids.has(id)), path + '.actions', '缺少战斗状态需要的动作')
+  })
+}
+
+/** Combine the host rules with the selected roster without changing a saved configuration snapshot. */
+export function applyFighterModule(base, module) {
+  object(base, 'config')
+  object(module, 'fighterModule')
+  object(module.metadata, 'fighterModule.metadata')
+  requireField(Array.isArray(module.roster) && module.roster.length > 0, 'fighterModule.roster', '缺少出场名单')
+  const result = structuredClone(base)
+  for (const key of ['characters','skills','passives','assets','ai']) {
+    const rows = object(module[key], 'fighterModule.' + key)
+    for (const [id, data] of Object.entries(rows)) {
+      requireField(!Object.hasOwn(result[key], id), 'fighterModule.' + key + '.' + id, '与宿主稳定 ID 冲突')
+      result[key][id] = structuredClone(data)
+    }
+  }
+  result.roleModule = structuredClone(module.metadata)
+  result.version = base.version + '+fighters.' + module.metadata.version
+  result.roster = [...module.roster]
+  result.animations = structuredClone(module.animations)
+  if (module.animationLayout) {
+    for (const [id, clip] of Object.entries(result.animations)) {
+      result.animations[id] = buildFighterAnimation(module.animationLayout, result.characters[id], clip, result.skills)
+    }
+  }
+  result.economy.initialCharacters = structuredClone(module.initialCharacters)
+  result.economy.initialCharacter = module.initialCharacters?.[0]
+  result.rules.resetComboOnStunExit = module.rules?.resetComboOnStunExit === true
+  for (const [stageId, characterId] of Object.entries(module.replacedUnlocks ?? {})) {
+    reference(result.stages, stageId, 'fighterModule.replacedUnlocks.' + stageId).unlockCharacter = characterId
+  }
+  for (const [stageId, rule] of Object.entries(module.stageOpponents ?? {})) {
+    const path = 'fighterModule.stageOpponents.' + stageId
+    const stage = reference(result.stages, stageId, path)
+    words(rule, ['description'], path)
+    stage.description = rule.description
+    for (const [previous, replacement] of Object.entries(object(rule.replace, path + '.replace'))) {
+      reference(result.characters, replacement, path + '.replace.' + previous)
+      const targets = stage.waves.flat().filter(enemy => enemy.characterId === previous)
+      requireField(targets.length > 0, path + '.replace.' + previous, '关卡中没有要替换的敌人')
+      for (const enemy of targets) enemy.characterId = replacement
+    }
+  }
+  return result
+}
+
+/** Resolve the selected environment by stable ID, defaulting only when no ID was supplied. */
+export function resolveScene(config, sceneId = config.defaultScene) {
+  return reference(config.scenes, sceneId, 'sceneId')
+}
+
+function checkFighterAudio(config) {
+  const {banks, gains, heavyStartup, stepFrames} = object(config.fighterAudio, 'fighterAudio')
+  object(banks, 'fighterAudio.banks')
+  for (const [id, bank] of Object.entries(banks)) {
+    if (config.roleModule) reference(config.characters, id, 'fighterAudio.banks.' + id)
+    requireField(typeof bank === 'string' && /^[a-z0-9_-]+$/.test(bank), 'fighterAudio.banks.' + id, '需要素材目录名')
+  }
+  object(gains, 'fighterAudio.gains')
+  const cues = ['basic1','basic2','basic3','skill1','skill2','ult','hit','block','move','evade','windup','victory']
+  for (const cue of cues) {
+    number(gains[cue], 'fighterAudio.gains.' + cue)
+    requireField(gains[cue] <= 1, 'fighterAudio.gains.' + cue, '音量必须在 0 到 1 之间')
+  }
+  requireField(Object.keys(gains).length === cues.length, 'fighterAudio.gains', '含未定义的音效')
+  number(stepFrames, 'fighterAudio.stepFrames', 1, true)
+  number(heavyStartup, 'fighterAudio.heavyStartup', 0, true)
+}
+
 /** Validate source data and cross-table references, throwing a path-specific error before play. */
 export function validateConfig(config) {
   object(config, 'config')
@@ -229,11 +419,18 @@ export function validateConfig(config) {
   table(config.assets, 'assets', (asset, path) => {
     words(asset, ['path','use','author','source','license','realPersonCheck','ipCheck','status'], path)
   })
+  table(config.scenes, 'scenes', (scene, path) => {
+    words(scene, ['name','alt'], path)
+    reference(config.assets, scene.asset, path + '.asset')
+  })
+  reference(config.scenes, config.defaultScene, 'defaultScene')
   table(config.skills, 'skills', checkSkill)
   checkPassives(config)
   table(config.characters, 'characters', (row, path) => checkCharacter(row, path, config))
+  if (config.fighterAudio) checkFighterAudio(config)
   checkStages(config)
   checkAi(config.ai)
+  if (config.roleModule) checkFighterModule(config)
   validateBindings(config.input)
   return config
 }
@@ -252,7 +449,15 @@ export async function loadConfig(fetcher = globalThis.fetch, page = globalThis.d
     }
     return config
   }
-  const response = await fetcher(new URL('./data/game.json', import.meta.url), { cache: 'no-store' })
-  if (!response.ok) throw new Error(`游戏配置读取失败（HTTP ${response.status}）`)
-  return validateConfig(await response.json())
+  async function fetchTable(filename) {
+    const response = await fetcher(new URL('./data/' + filename, import.meta.url), { cache: 'no-store' })
+    if (!response.ok) throw new Error(`游戏配置读取失败（${filename}，HTTP ${response.status}）`)
+    return response.json()
+  }
+  const base = await fetchTable('game.json')
+  if (!base.fighterModule) return validateConfig(base)
+  requireField(typeof base.fighterModule === 'string' && /^[A-Za-z0-9-]+\.json$/.test(base.fighterModule),
+    'fighterModule', '需要 data 目录内的模块名')
+  const fighters = await fetchTable(base.fighterModule)
+  return validateConfig(applyFighterModule(base, fighters))
 }

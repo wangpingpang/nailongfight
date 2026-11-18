@@ -1,0 +1,1515 @@
+{
+  "metadata": {
+    "version": "0.4+R1.1",
+    "name": "六选手个人试玩 · R1全身动作",
+    "sourceCommit": "bcbd4d55e360224a78a99b38253e5b13e03378bf",
+    "rightsStatus": "五位热梗选手按用户确认的三种样例补全人物与连续动作。仅供私有预览；公开发行使用条件待核验。",
+    "tuningNote": "全部数值为假设值。时长用逻辑帧，距离用 U，伤害系数乘以攻击力。",
+    "legacySourceVersion": "0.3",
+    "legacySourceCommit": "d8ef648",
+    "scope": "五个样例选手与一个保留的独立测试选手",
+    "archiveOnly": [
+      {
+        "id": "penguin",
+        "sourceName": "优雅企鹅"
+      },
+      {
+        "id": "naiwa",
+        "sourceName": "奶娃（旧奶蛙）"
+      }
+    ]
+  },
+  "roster": [
+    "melancholy",
+    "laughing",
+    "sacred",
+    "courier",
+    "nailong",
+    "doubao"
+  ],
+  "characters": {
+    "melancholy": {
+      "id": "melancholy",
+      "name": "忧郁奶蛙",
+      "role": "舞步反击",
+      "description": "通过退步诱导空放，再踩准可视节拍回旋反击。",
+      "theme": "忧郁与舞步",
+      "playstyle": "退半步，把反击留给下一拍。",
+      "color": "#849DC9",
+      "playable": true,
+      "canDefend": true,
+      "hp": 1000,
+      "attack": 100,
+      "speed": 4,
+      "hurtWidth": 1,
+      "hurtDepth": 0.5,
+      "basic": [
+        "melancholy.n1",
+        "melancholy.n2",
+        "melancholy.n3"
+      ],
+      "s1": "melancholy.s1",
+      "s2": "melancholy.s2",
+      "ult": "melancholy.ult",
+      "passive": "melancholy.passive",
+      "asset": "frog.model",
+      "ai": "melancholy",
+      "presentation": "atlas",
+      "animation": "melancholy"
+    },
+    "laughing": {
+      "id": "laughing",
+      "name": "大笑奶蛙",
+      "role": "弹跳扰阵",
+      "description": "弹跳落地命中后积攒笑意，再用强化震波扩大近身威胁。",
+      "theme": "大笑与弹跳",
+      "playstyle": "蹦到身边，笑出一圈震波。",
+      "color": "#D1AC39",
+      "playable": true,
+      "canDefend": true,
+      "hp": 1000,
+      "attack": 100,
+      "speed": 4,
+      "hurtWidth": 1,
+      "hurtDepth": 0.5,
+      "basic": [
+        "laughing.n1",
+        "laughing.n2",
+        "laughing.n3"
+      ],
+      "s1": "laughing.s1",
+      "s2": "laughing.s2",
+      "ult": "laughing.ult",
+      "passive": "laughing.passive",
+      "asset": "frog.model",
+      "ai": "laughing",
+      "presentation": "atlas",
+      "animation": "laughing"
+    },
+    "sacred": {
+      "id": "sacred",
+      "name": "神圣奶蛙",
+      "role": "光环控场",
+      "description": "预置地面光环限制普通移动，再蓄势攻击覆盖区域。",
+      "theme": "静心与蓄势",
+      "playstyle": "先定下光域，再等一束垂光。",
+      "color": "#C5AA64",
+      "playable": true,
+      "canDefend": true,
+      "hp": 1000,
+      "attack": 100,
+      "speed": 4,
+      "hurtWidth": 1,
+      "hurtDepth": 0.5,
+      "basic": [
+        "sacred.n1",
+        "sacred.n2",
+        "sacred.n3"
+      ],
+      "s1": "sacred.s1",
+      "s2": "sacred.s2",
+      "ult": "sacred.ult",
+      "passive": "sacred.passive",
+      "asset": "frog.model",
+      "ai": "sacred",
+      "presentation": "atlas",
+      "animation": "sacred"
+    },
+    "courier": {
+      "id": "courier",
+      "name": "美团袋鼠",
+      "role": "定点扑击",
+      "description": "看准落点向前扑进，贴身时可提前收势撞击。",
+      "theme": "定点与扑击",
+      "playstyle": "先留一个落点，再判断扑到哪儿收势。",
+      "color": "#DDAA43",
+      "playable": true,
+      "canDefend": true,
+      "hp": 1000,
+      "attack": 100,
+      "speed": 4,
+      "hurtWidth": 1,
+      "hurtDepth": 0.5,
+      "basic": [
+        "courier.n1",
+        "courier.n2",
+        "courier.n3"
+      ],
+      "s1": "courier.s1",
+      "s2": "courier.s2",
+      "ult": "courier.ult",
+      "passive": "courier.passive",
+      "asset": "kangaroo.model",
+      "ai": "courier",
+      "presentation": "atlas",
+      "animation": "courier"
+    },
+    "nailong": {
+      "id": "nailong",
+      "name": "奶龙",
+      "theme": "进食蓄力与近身冲撞",
+      "role": "近身压制",
+      "description": "进食后获得饱腹，贴近对手时可用肚皮打出强化冲撞。",
+      "playstyle": "避开压制取得饱腹，再接近对手并打出冲撞。",
+      "presentation": "atlas",
+      "playable": true,
+      "canDefend": true,
+      "hp": 1000,
+      "attack": 100,
+      "speed": 4,
+      "hurtWidth": 1,
+      "hurtDepth": 0.5,
+      "basic": [
+        "nailong.n1",
+        "nailong.n2",
+        "nailong.n3"
+      ],
+      "s1": "nailong.s1",
+      "s2": "nailong.s2",
+      "ult": "nailong.ult",
+      "passive": "nailong.passive",
+      "asset": "dragon.model",
+      "ai": "nailong",
+      "animation": "nailong"
+    },
+    "doubao": {
+      "id": "doubao",
+      "name": "气泡控场",
+      "theme": "远程试探与延迟区域封锁",
+      "role": "中距控场",
+      "description": "测试外形采用原创机械样机。先用气泡试探，再设置固定延时区；气泡命中能缩短布区冷却。",
+      "playstyle": "预放区域后发射气泡，限制对手走位。",
+      "metadata": {
+        "sourceName": "豆包",
+        "sourceVersion": "0.3",
+        "presentationNote": "采用原创测试外形"
+      },
+      "presentation": "procedural",
+      "playable": true,
+      "canDefend": true,
+      "hp": 1000,
+      "attack": 100,
+      "speed": 4,
+      "hurtWidth": 1,
+      "hurtDepth": 0.5,
+      "basic": [
+        "doubao.n1",
+        "doubao.n2",
+        "doubao.n3"
+      ],
+      "s1": "doubao.s1",
+      "s2": "doubao.s2",
+      "ult": "doubao.ult",
+      "passive": "doubao.passive",
+      "asset": "doubao.proxy",
+      "ai": "doubao"
+    }
+  },
+  "skills": {
+    "melancholy.n1": {
+      "id": "melancholy.n1",
+      "name": "探步掌",
+      "kind": "basic",
+      "description": "前两段命中后可衔接下一段或普通技能，第三段以旋步扫击推开目标。",
+      "startup": 8,
+      "active": 3,
+      "recovery": 10,
+      "cd": 0,
+      "cost": 0,
+      "coeff": 0.25,
+      "stun": 18,
+      "knockback": 0.08,
+      "knockdown": false,
+      "effect": {
+        "type": "melee",
+        "length": 1.1,
+        "depth": 0.7
+      }
+    },
+    "melancholy.n2": {
+      "id": "melancholy.n2",
+      "name": "回身拍",
+      "kind": "basic",
+      "description": "前两段命中后可衔接下一段或普通技能，第三段以旋步扫击推开目标。",
+      "startup": 9,
+      "active": 3,
+      "recovery": 12,
+      "cd": 0,
+      "cost": 0,
+      "coeff": 0.35,
+      "stun": 20,
+      "knockback": 0.1,
+      "knockdown": false,
+      "effect": {
+        "type": "melee",
+        "length": 1.2,
+        "depth": 0.7
+      }
+    },
+    "melancholy.n3": {
+      "id": "melancholy.n3",
+      "name": "旋步扫",
+      "kind": "basic",
+      "description": "前两段命中后可衔接下一段或普通技能，第三段以旋步扫击推开目标。",
+      "startup": 12,
+      "active": 4,
+      "recovery": 20,
+      "cd": 0,
+      "cost": 0,
+      "coeff": 0.6,
+      "stun": 24,
+      "knockback": 0.65,
+      "knockdown": false,
+      "effect": {
+        "type": "melee",
+        "length": 1.4,
+        "depth": 0.8
+      }
+    },
+    "melancholy.s1": {
+      "id": "melancholy.s1",
+      "name": "回身慢步",
+      "kind": "skill",
+      "description": "向起手朝向的反方向退 0.9 U。全程可受击，依靠实际距离避开攻击；受击硬直中无法使用。",
+      "startup": 6,
+      "active": 12,
+      "recovery": 16,
+      "cd": 420,
+      "cost": 0,
+      "coeff": 0,
+      "stun": 0,
+      "knockback": 0,
+      "knockdown": false,
+      "effect": {
+        "type": "backstep",
+        "distance": 0.9
+      }
+    },
+    "melancholy.s2": {
+      "id": "melancholy.s2",
+      "name": "落拍回旋",
+      "kind": "skill",
+      "description": "前方半圆半径 1.35 U，单次命中。合法起手落在拍点前后 4 帧内时，本次伤害提高至 145。",
+      "startup": 18,
+      "active": 4,
+      "recovery": 22,
+      "cd": 540,
+      "cost": 0,
+      "coeff": 1.2,
+      "stun": 30,
+      "knockback": 0.25,
+      "knockdown": false,
+      "effect": {
+        "type": "semicircle",
+        "radius": 1.35
+      }
+    },
+    "melancholy.ult": {
+      "id": "melancholy.ult",
+      "name": "雨幕独舞",
+      "kind": "ult",
+      "description": "连续舞步后完成一次前方 2.4 × 1.4 U 的终结扫击并击倒；演出多姿态共用一次判定。",
+      "startup": 48,
+      "active": 6,
+      "recovery": 30,
+      "cd": 0,
+      "cost": 100,
+      "coeff": 2.45,
+      "stun": 0,
+      "knockback": 0,
+      "knockdown": true,
+      "effect": {
+        "type": "melee",
+        "length": 2.4,
+        "depth": 1.4
+      }
+    },
+    "laughing.n1": {
+      "id": "laughing.n1",
+      "name": "探掌",
+      "kind": "basic",
+      "description": "伸掌试探接反手拍击，最后以弹腹把目标推开。前两段命中后可衔接下一段或普通技能。",
+      "startup": 8,
+      "active": 3,
+      "recovery": 10,
+      "cd": 0,
+      "cost": 0,
+      "coeff": 0.3,
+      "stun": 18,
+      "knockback": 0.08,
+      "knockdown": false,
+      "effect": {
+        "type": "melee",
+        "length": 1.1,
+        "depth": 0.7
+      }
+    },
+    "laughing.n2": {
+      "id": "laughing.n2",
+      "name": "反拍",
+      "kind": "basic",
+      "description": "伸掌试探接反手拍击，最后以弹腹把目标推开。前两段命中后可衔接下一段或普通技能。",
+      "startup": 9,
+      "active": 3,
+      "recovery": 12,
+      "cd": 0,
+      "cost": 0,
+      "coeff": 0.4,
+      "stun": 20,
+      "knockback": 0.1,
+      "knockdown": false,
+      "effect": {
+        "type": "melee",
+        "length": 1.2,
+        "depth": 0.7
+      }
+    },
+    "laughing.n3": {
+      "id": "laughing.n3",
+      "name": "弹腹",
+      "kind": "basic",
+      "description": "伸掌试探接反手拍击，最后以弹腹把目标推开。前两段命中后可衔接下一段或普通技能。",
+      "startup": 11,
+      "active": 4,
+      "recovery": 20,
+      "cd": 0,
+      "cost": 0,
+      "coeff": 0.65,
+      "stun": 24,
+      "knockback": 0.65,
+      "knockdown": false,
+      "effect": {
+        "type": "melee",
+        "length": 1.4,
+        "depth": 0.8
+      }
+    },
+    "laughing.s1": {
+      "id": "laughing.s1",
+      "name": "捧腹震波",
+      "kind": "skill",
+      "description": "自身半径 1.25 U 单次震波。合法起手时消耗笑意，本次半径扩大至 1.6 U，伤害提高至 140。",
+      "startup": 14,
+      "active": 4,
+      "recovery": 20,
+      "cd": 480,
+      "cost": 0,
+      "coeff": 1.1,
+      "stun": 30,
+      "knockback": 0.3,
+      "knockdown": false,
+      "effect": {
+        "type": "circle",
+        "radius": 1.25,
+        "offset": 0
+      }
+    },
+    "laughing.s2": {
+      "id": "laughing.s2",
+      "name": "弹簧蹦跶",
+      "kind": "skill",
+      "description": "向前跃进 1.8 U，落地在半径 0.9 U 内造成一次伤害。跳跃全程可受击，不提供无敌或空中免伤。",
+      "startup": 24,
+      "active": 4,
+      "recovery": 22,
+      "cd": 600,
+      "cost": 0,
+      "coeff": 1.3,
+      "stun": 30,
+      "knockback": 0.2,
+      "knockdown": false,
+      "effect": {
+        "type": "leap",
+        "offset": 1.8,
+        "radius": 0.9,
+        "moveFrames": 16,
+        "landAtBody": true
+      }
+    },
+    "laughing.ult": {
+      "id": "laughing.ult",
+      "name": "笑到震场",
+      "kind": "ult",
+      "description": "原地蓄势大笑，发出半径 2.2 U 的范围震波并击倒。三圈波纹只结算一次伤害，蓄势可被打断。",
+      "startup": 42,
+      "active": 6,
+      "recovery": 30,
+      "cd": 0,
+      "cost": 100,
+      "coeff": 2.6,
+      "stun": 0,
+      "knockback": 0,
+      "knockdown": true,
+      "effect": {
+        "type": "circle",
+        "radius": 2.2,
+        "offset": 0
+      }
+    },
+    "sacred.n1": {
+      "id": "sacred.n1",
+      "name": "轻推",
+      "kind": "basic",
+      "description": "近身推掌三连，前两段命中后可衔接下一段或普通技能，第三段推开目标。",
+      "startup": 8,
+      "active": 3,
+      "recovery": 10,
+      "cd": 0,
+      "cost": 0,
+      "coeff": 0.25,
+      "stun": 18,
+      "knockback": 0.08,
+      "knockdown": false,
+      "effect": {
+        "type": "melee",
+        "length": 1.1,
+        "depth": 0.7
+      }
+    },
+    "sacred.n2": {
+      "id": "sacred.n2",
+      "name": "合掌",
+      "kind": "basic",
+      "description": "近身推掌三连，前两段命中后可衔接下一段或普通技能，第三段推开目标。",
+      "startup": 10,
+      "active": 3,
+      "recovery": 12,
+      "cd": 0,
+      "cost": 0,
+      "coeff": 0.35,
+      "stun": 20,
+      "knockback": 0.1,
+      "knockdown": false,
+      "effect": {
+        "type": "melee",
+        "length": 1.2,
+        "depth": 0.7
+      }
+    },
+    "sacred.n3": {
+      "id": "sacred.n3",
+      "name": "展开推击",
+      "kind": "basic",
+      "description": "近身推掌三连，前两段命中后可衔接下一段或普通技能，第三段推开目标。",
+      "startup": 12,
+      "active": 4,
+      "recovery": 20,
+      "cd": 0,
+      "cost": 0,
+      "coeff": 0.7,
+      "stun": 24,
+      "knockback": 0.7,
+      "knockdown": false,
+      "effect": {
+        "type": "melee",
+        "length": 1.4,
+        "depth": 0.8
+      }
+    },
+    "sacred.s1": {
+      "id": "sacred.s1",
+      "name": "静光领域",
+      "kind": "skill",
+      "description": "在前方 1.5 U 生成半径 1.1 U 光环，持续 2 秒。环内敌人普通移速乘 0.75，离场解除，不影响闪避或技能位移。",
+      "startup": 18,
+      "active": 1,
+      "recovery": 21,
+      "cd": 600,
+      "cost": 0,
+      "coeff": 0,
+      "stun": 0,
+      "knockback": 0,
+      "knockdown": false,
+      "effect": {
+        "type": "field",
+        "offset": 1.5,
+        "radius": 1.1,
+        "life": 120,
+        "slow": 0.75
+      }
+    },
+    "sacred.s2": {
+      "id": "sacred.s2",
+      "name": "垂光落点",
+      "kind": "skill",
+      "description": "起手锁定前方 2 U 落点，以半径 0.9 U 攻击一次。蓄势全程显示预警且可被打断。",
+      "startup": 42,
+      "active": 4,
+      "recovery": 24,
+      "cd": 660,
+      "cost": 0,
+      "coeff": 1.5,
+      "stun": 32,
+      "knockback": 0.3,
+      "knockdown": false,
+      "effect": {
+        "type": "circle",
+        "radius": 0.9,
+        "offset": 2
+      }
+    },
+    "sacred.ult": {
+      "id": "sacred.ult",
+      "name": "光域降临",
+      "kind": "ult",
+      "description": "起手锁定前方 1 U 中心，释放半径 2.2 U 的一次范围攻击并击倒；光效不产生追加命中。",
+      "startup": 54,
+      "active": 6,
+      "recovery": 30,
+      "cd": 0,
+      "cost": 100,
+      "coeff": 2.7,
+      "stun": 0,
+      "knockback": 0,
+      "knockdown": true,
+      "effect": {
+        "type": "circle",
+        "radius": 2.2,
+        "offset": 1
+      }
+    },
+    "courier.n1": {
+      "id": "courier.n1",
+      "name": "探爪",
+      "kind": "basic",
+      "description": "探爪、摆臂后侧身顶腹，最后一击推开对手。前两段命中后可衔接下一段或普通技能。",
+      "startup": 8,
+      "active": 3,
+      "recovery": 10,
+      "cd": 0,
+      "cost": 0,
+      "coeff": 0.3,
+      "stun": 18,
+      "knockback": 0.08,
+      "knockdown": false,
+      "effect": {
+        "type": "melee",
+        "length": 1.1,
+        "depth": 0.7
+      }
+    },
+    "courier.n2": {
+      "id": "courier.n2",
+      "name": "摆臂",
+      "kind": "basic",
+      "description": "探爪、摆臂后侧身顶腹，最后一击推开对手。前两段命中后可衔接下一段或普通技能。",
+      "startup": 9,
+      "active": 3,
+      "recovery": 12,
+      "cd": 0,
+      "cost": 0,
+      "coeff": 0.4,
+      "stun": 20,
+      "knockback": 0.1,
+      "knockdown": false,
+      "effect": {
+        "type": "melee",
+        "length": 1.2,
+        "depth": 0.7
+      }
+    },
+    "courier.n3": {
+      "id": "courier.n3",
+      "name": "侧身顶腹",
+      "kind": "basic",
+      "description": "探爪、摆臂后侧身顶腹，最后一击推开对手。前两段命中后可衔接下一段或普通技能。",
+      "startup": 12,
+      "active": 4,
+      "recovery": 20,
+      "cd": 0,
+      "cost": 0,
+      "coeff": 0.7,
+      "stun": 24,
+      "knockback": 0.65,
+      "knockdown": false,
+      "effect": {
+        "type": "melee",
+        "length": 1.4,
+        "depth": 0.8
+      }
+    },
+    "courier.s1": {
+      "id": "courier.s1",
+      "name": "落点标记",
+      "kind": "skill",
+      "description": "在前方 2.4 U 放置一个终点标记，持续 4 秒。标记不追踪敌人，不造成伤害，最多保留一个。",
+      "startup": 12,
+      "active": 1,
+      "recovery": 17,
+      "cd": 540,
+      "cost": 0,
+      "coeff": 0,
+      "stun": 0,
+      "knockback": 0,
+      "knockdown": false,
+      "effect": {
+        "type": "marker",
+        "offset": 2.4,
+        "life": 240
+      }
+    },
+    "courier.s2": {
+      "id": "courier.s2",
+      "name": "蹬地突进",
+      "kind": "skill",
+      "description": "默认向前前冲 1.5 U，有效标记可锁定最远 2.4 U 终点。前冲时再次输入可提前收势并攻击，半径 0.95 U，全程可受击。",
+      "startup": 12,
+      "active": 4,
+      "recovery": 22,
+      "cd": 600,
+      "cost": 0,
+      "coeff": 1.3,
+      "stun": 28,
+      "knockback": 0.35,
+      "knockdown": false,
+      "effect": {
+        "type": "slide",
+        "distance": 1.5,
+        "maxDistance": 2.4,
+        "slideFrames": 12,
+        "radius": 0.95
+      }
+    },
+    "courier.ult": {
+      "id": "courier.ult",
+      "name": "越界重扑",
+      "kind": "ult",
+      "description": "前摇末 12 帧向前前冲 2.5 U，在终点半径 1.35 U 内攻击一次并击倒。起手显示预警，移动不提供无敌。",
+      "startup": 36,
+      "active": 6,
+      "recovery": 30,
+      "cd": 0,
+      "cost": 100,
+      "coeff": 2.5,
+      "stun": 0,
+      "knockback": 0,
+      "knockdown": true,
+      "effect": {
+        "type": "leap",
+        "offset": 2.5,
+        "radius": 1.35,
+        "moveFrames": 12,
+        "landAtBody": true
+      }
+    },
+    "nailong.n1": {
+      "id": "nailong.n1",
+      "name": "小爪推击",
+      "kind": "basic",
+      "description": "前两段命中后可衔接下一段或普通技能，第三段将目标推开。",
+      "startup": 7,
+      "active": 3,
+      "recovery": 10,
+      "cd": 0,
+      "cost": 0,
+      "coeff": 0.35,
+      "stun": 18,
+      "knockback": 0.08,
+      "knockdown": false,
+      "effect": {
+        "type": "melee",
+        "length": 1.1,
+        "depth": 0.7
+      }
+    },
+    "nailong.n2": {
+      "id": "nailong.n2",
+      "name": "肚皮轻顶",
+      "kind": "basic",
+      "description": "前两段命中后可衔接下一段或普通技能，第三段将目标推开。",
+      "startup": 8,
+      "active": 3,
+      "recovery": 12,
+      "cd": 0,
+      "cost": 0,
+      "coeff": 0.45,
+      "stun": 20,
+      "knockback": 0.1,
+      "knockdown": false,
+      "effect": {
+        "type": "melee",
+        "length": 1.2,
+        "depth": 0.7
+      }
+    },
+    "nailong.n3": {
+      "id": "nailong.n3",
+      "name": "转身重推",
+      "kind": "basic",
+      "description": "前两段命中后可衔接下一段或普通技能，第三段将目标推开。",
+      "startup": 11,
+      "active": 4,
+      "recovery": 20,
+      "cd": 0,
+      "cost": 0,
+      "coeff": 0.7,
+      "stun": 24,
+      "knockback": 0.7,
+      "knockdown": false,
+      "effect": {
+        "type": "melee",
+        "length": 1.4,
+        "depth": 0.8
+      }
+    },
+    "nailong.s1": {
+      "id": "nailong.s1",
+      "name": "肚皮撞击",
+      "kind": "skill",
+      "description": "向前冲撞 1.5 U。同一目标命中一次；释放时消耗饱腹，锁定强化伤害。",
+      "startup": 10,
+      "active": 4,
+      "recovery": 18,
+      "cd": 480,
+      "cost": 0,
+      "coeff": 1.3,
+      "stun": 32,
+      "knockback": 0.2,
+      "knockdown": false,
+      "effect": {
+        "type": "dash",
+        "length": 1.2,
+        "depth": 0.8,
+        "distance": 1.5
+      }
+    },
+    "nailong.s2": {
+      "id": "nailong.s2",
+      "name": "进食蓄能",
+      "kind": "skill",
+      "description": "获得持续 8 秒的饱腹，最多 1 层。获得状态前受击会中断进食，冷却保留。",
+      "startup": 30,
+      "active": 1,
+      "recovery": 17,
+      "cd": 720,
+      "cost": 0,
+      "coeff": 0,
+      "stun": 0,
+      "knockback": 0,
+      "knockdown": false,
+      "effect": {
+        "type": "feed"
+      }
+    },
+    "nailong.ult": {
+      "id": "nailong.ult",
+      "name": "蓄势扑压",
+      "kind": "ult",
+      "description": "扑向起手锁定的前方落点，落地造成一次范围伤害并击倒；预警期间可以避开或打断。",
+      "startup": 36,
+      "active": 4,
+      "recovery": 30,
+      "cd": 0,
+      "cost": 100,
+      "coeff": 2.4,
+      "stun": 0,
+      "knockback": 0,
+      "knockdown": true,
+      "effect": {
+        "type": "leap",
+        "offset": 1.5,
+        "radius": 1.35,
+        "moveFrames": 12,
+        "landAtBody": true
+      }
+    },
+    "doubao.n1": {
+      "id": "doubao.n1",
+      "name": "点按",
+      "kind": "basic",
+      "description": "以轻巧手势完成近身三连，第三段的小波纹为近战表现，命中后将目标推开。",
+      "startup": 8,
+      "active": 3,
+      "recovery": 10,
+      "cd": 0,
+      "cost": 0,
+      "coeff": 0.3,
+      "stun": 18,
+      "knockback": 0.08,
+      "knockdown": false,
+      "effect": {
+        "type": "melee",
+        "length": 1.1,
+        "depth": 0.7
+      }
+    },
+    "doubao.n2": {
+      "id": "doubao.n2",
+      "name": "推掌",
+      "kind": "basic",
+      "description": "以轻巧手势完成近身三连，第三段的小波纹为近战表现，命中后将目标推开。",
+      "startup": 9,
+      "active": 3,
+      "recovery": 12,
+      "cd": 0,
+      "cost": 0,
+      "coeff": 0.4,
+      "stun": 20,
+      "knockback": 0.1,
+      "knockdown": false,
+      "effect": {
+        "type": "melee",
+        "length": 1.2,
+        "depth": 0.7
+      }
+    },
+    "doubao.n3": {
+      "id": "doubao.n3",
+      "name": "合掌送波",
+      "kind": "basic",
+      "description": "以轻巧手势完成近身三连，第三段的小波纹为近战表现，命中后将目标推开。",
+      "startup": 12,
+      "active": 4,
+      "recovery": 20,
+      "cd": 0,
+      "cost": 0,
+      "coeff": 0.65,
+      "stun": 24,
+      "knockback": 0.65,
+      "knockdown": false,
+      "effect": {
+        "type": "melee",
+        "length": 1.4,
+        "depth": 0.8
+      }
+    },
+    "doubao.s1": {
+      "id": "doubao.s1",
+      "name": "弹幕气泡",
+      "kind": "skill",
+      "description": "向前发射一枚气泡，速度 6 U/秒、寿命 1 秒，命中首个有效目标后消失。",
+      "startup": 12,
+      "active": 1,
+      "recovery": 18,
+      "cd": 420,
+      "cost": 0,
+      "coeff": 1.1,
+      "stun": 26,
+      "knockback": 0.25,
+      "knockdown": false,
+      "effect": {
+        "type": "projectile",
+        "offset": 0.5,
+        "diameter": 0.55,
+        "speed": 6,
+        "lifetime": 60
+      }
+    },
+    "doubao.s2": {
+      "id": "doubao.s2",
+      "name": "稍等，生成中",
+      "kind": "skill",
+      "description": "在前方 2 U 留下预警标记，生成后等待 36 帧，发动一次半径 0.9 U 的区域攻击。",
+      "startup": 12,
+      "active": 1,
+      "recovery": 20,
+      "cd": 660,
+      "cost": 0,
+      "coeff": 1.3,
+      "stun": 30,
+      "knockback": 0.3,
+      "knockdown": false,
+      "effect": {
+        "type": "delayed",
+        "offset": 2,
+        "delay": 36,
+        "radius": 0.9,
+        "warnOnSpawnOnly": true
+      }
+    },
+    "doubao.ult": {
+      "id": "doubao.ult",
+      "name": "一次说清",
+      "kind": "ult",
+      "description": "将聚拢的气泡化作前方宽幅指令波，单次命中并击倒，起手显示完整攻击区域。",
+      "startup": 42,
+      "active": 4,
+      "recovery": 30,
+      "cd": 0,
+      "cost": 100,
+      "coeff": 2.5,
+      "stun": 0,
+      "knockback": 0,
+      "knockdown": true,
+      "effect": {
+        "type": "melee",
+        "length": 3.6,
+        "depth": 1.5
+      }
+    }
+  },
+  "passives": {
+    "melancholy.passive": {
+      "id": "melancholy.passive",
+      "name": "踩准心拍",
+      "description": "节拍只提高落拍回旋伤害，不改变前后摇、硬直或冷却。无效输入不预存强化，被打断时本次强化结束。",
+      "type": "beat",
+      "skill": "melancholy.s2",
+      "period": 60,
+      "window": 4,
+      "bonusCoeff": 0.25
+    },
+    "laughing.passive": {
+      "id": "laughing.passive",
+      "name": "笑点连锁",
+      "description": "弹簧蹦跶有效命中后获得笑意，下次合法捧腹震波起手时消耗并强化。最多 1 层，空放或中断不返还。",
+      "type": "mirth",
+      "skill": "laughing.s1",
+      "grantSkill": "laughing.s2",
+      "duration": 240,
+      "bonusCoeff": 0.3,
+      "boostRadius": 1.6
+    },
+    "sacred.passive": {
+      "id": "sacred.passive",
+      "name": "环光共鸣",
+      "description": "垂光落点实际命中时，目标地面中心仍在自身有效光环内则伤害为 180。不增加命中次数，不强化奥义。",
+      "type": "resonance",
+      "skill": "sacred.s2",
+      "fieldSkill": "sacred.s1",
+      "bonusCoeff": 0.3
+    },
+    "courier.passive": {
+      "id": "courier.passive",
+      "name": "落点回响",
+      "description": "消耗标记、到达原落点且命中时，技能一剩余冷却减少 1 秒。提前收势、空放或被打断均不触发。",
+      "type": "arrival",
+      "skill": "courier.s2",
+      "reduceSlot": "s1",
+      "reduceFrames": 60
+    },
+    "nailong.passive": {
+      "id": "nailong.passive",
+      "name": "饭后劲头",
+      "description": "移动速度由 4 提高至 4.4 U/秒。饱腹消耗或到期时恢复基础速度。",
+      "type": "fed",
+      "skill": "nailong.s1",
+      "grantSkill": "nailong.s2",
+      "duration": 480,
+      "speedMultiplier": 1.1,
+      "bonusCoeff": 0.3
+    },
+    "doubao.passive": {
+      "id": "doubao.passive",
+      "name": "快速响应",
+      "description": "弹幕气泡命中后，技能2剩余冷却减少 1 秒，最低减至 0。",
+      "type": "hitRefund",
+      "skill": "doubao.s1",
+      "reduceSlot": "s2",
+      "reduceFrames": 60
+    }
+  },
+  "animations": {
+    "melancholy": {
+      "prototype": "frog.model",
+      "sourceId": "melancholy",
+      "family": "frog",
+      "sheets": {
+        "A": "frog-A",
+        "B": "frog-B",
+        "C": "melancholy-C",
+        "D": "melancholy-D"
+      }
+    },
+    "laughing": {
+      "prototype": "frog.model",
+      "sourceId": "laughing",
+      "family": "frog",
+      "sheets": {
+        "A": "frog-A",
+        "B": "frog-B",
+        "C": "laughing-C",
+        "D": "laughing-D"
+      }
+    },
+    "sacred": {
+      "prototype": "frog.model",
+      "sourceId": "sacred",
+      "family": "frog",
+      "sheets": {
+        "A": "frog-A",
+        "B": "frog-B",
+        "C": "sacred-C",
+        "D": "sacred-D"
+      }
+    },
+    "courier": {
+      "prototype": "kangaroo.model",
+      "sourceId": "kangaroo",
+      "family": "kangaroo",
+      "sheets": {
+        "A": "kangaroo-A",
+        "B": "kangaroo-B",
+        "C": "kangaroo-C",
+        "D": "kangaroo-D"
+      }
+    },
+    "nailong": {
+      "prototype": "dragon.model",
+      "sourceId": "dragon",
+      "family": "dragon",
+      "sheets": {
+        "A": "dragon-A",
+        "B": "dragon-B",
+        "C": "dragon-C",
+        "D": "dragon-D"
+      }
+    }
+  },
+  "assets": {
+    "doubao.proxy": {
+      "id": "doubao.proxy",
+      "path": "./assets/fighters/doubao-proxy.svg",
+      "use": "气泡控场测试外形",
+      "author": "项目制作组",
+      "source": "原创机械样机矢量图，程序绘制姿态。",
+      "license": "原型内测使用。",
+      "realPersonCheck": "无真人面孔、服装、姓名或声音。",
+      "ipCheck": "重新绘制机械轮廓，未使用参考档中的原图、商标或形象特征。",
+      "status": "prototype"
+    },
+    "frog.model": {
+      "id": "frog.model",
+      "path": "./assets/fighters/frog-model.webp",
+      "use": "全身选手图",
+      "author": "用户样例与项目动作制作",
+      "source": "用户托腮图；腿脚依据同形全身动作参考还原性推补",
+      "license": "仅供个人试玩与内部评审，公开使用条件待核实。",
+      "realPersonCheck": "无真人形象。",
+      "ipCheck": "按用户指定形象制作，保留第三方角色特征。",
+      "status": "internal-review"
+    },
+    "frog-A": {
+      "id": "frog-A",
+      "path": "./assets/fighters/frog-A.webp",
+      "use": "R1逐帧战斗图集",
+      "author": "用户样例与项目动作制作",
+      "source": "用户托腮图；腿脚依据同形全身动作参考还原性推补",
+      "license": "仅供个人试玩与内部评审，公开使用条件待核实。",
+      "realPersonCheck": "无真人形象。",
+      "ipCheck": "按用户指定形象制作，保留第三方角色特征。",
+      "status": "internal-review"
+    },
+    "frog-B": {
+      "id": "frog-B",
+      "path": "./assets/fighters/frog-B.webp",
+      "use": "R1逐帧战斗图集",
+      "author": "用户样例与项目动作制作",
+      "source": "用户托腮图；腿脚依据同形全身动作参考还原性推补",
+      "license": "仅供个人试玩与内部评审，公开使用条件待核实。",
+      "realPersonCheck": "无真人形象。",
+      "ipCheck": "按用户指定形象制作，保留第三方角色特征。",
+      "status": "internal-review"
+    },
+    "melancholy-C": {
+      "id": "melancholy-C",
+      "path": "./assets/fighters/melancholy-C.webp",
+      "use": "R1逐帧战斗图集",
+      "author": "用户样例与项目动作制作",
+      "source": "用户托腮图；腿脚依据同形全身动作参考还原性推补",
+      "license": "仅供个人试玩与内部评审，公开使用条件待核实。",
+      "realPersonCheck": "无真人形象。",
+      "ipCheck": "按用户指定形象制作，保留第三方角色特征。",
+      "status": "internal-review"
+    },
+    "melancholy-D": {
+      "id": "melancholy-D",
+      "path": "./assets/fighters/melancholy-D.webp",
+      "use": "R1逐帧战斗图集",
+      "author": "用户样例与项目动作制作",
+      "source": "用户托腮图；腿脚依据同形全身动作参考还原性推补",
+      "license": "仅供个人试玩与内部评审，公开使用条件待核实。",
+      "realPersonCheck": "无真人形象。",
+      "ipCheck": "按用户指定形象制作，保留第三方角色特征。",
+      "status": "internal-review"
+    },
+    "laughing-C": {
+      "id": "laughing-C",
+      "path": "./assets/fighters/laughing-C.webp",
+      "use": "R1逐帧战斗图集",
+      "author": "用户样例与项目动作制作",
+      "source": "用户托腮图；腿脚依据同形全身动作参考还原性推补",
+      "license": "仅供个人试玩与内部评审，公开使用条件待核实。",
+      "realPersonCheck": "无真人形象。",
+      "ipCheck": "按用户指定形象制作，保留第三方角色特征。",
+      "status": "internal-review"
+    },
+    "laughing-D": {
+      "id": "laughing-D",
+      "path": "./assets/fighters/laughing-D.webp",
+      "use": "R1逐帧战斗图集",
+      "author": "用户样例与项目动作制作",
+      "source": "用户托腮图；腿脚依据同形全身动作参考还原性推补",
+      "license": "仅供个人试玩与内部评审，公开使用条件待核实。",
+      "realPersonCheck": "无真人形象。",
+      "ipCheck": "按用户指定形象制作，保留第三方角色特征。",
+      "status": "internal-review"
+    },
+    "sacred-C": {
+      "id": "sacred-C",
+      "path": "./assets/fighters/sacred-C.webp",
+      "use": "R1逐帧战斗图集",
+      "author": "用户样例与项目动作制作",
+      "source": "用户托腮图；腿脚依据同形全身动作参考还原性推补",
+      "license": "仅供个人试玩与内部评审，公开使用条件待核实。",
+      "realPersonCheck": "无真人形象。",
+      "ipCheck": "按用户指定形象制作，保留第三方角色特征。",
+      "status": "internal-review"
+    },
+    "sacred-D": {
+      "id": "sacred-D",
+      "path": "./assets/fighters/sacred-D.webp",
+      "use": "R1逐帧战斗图集",
+      "author": "用户样例与项目动作制作",
+      "source": "用户托腮图；腿脚依据同形全身动作参考还原性推补",
+      "license": "仅供个人试玩与内部评审，公开使用条件待核实。",
+      "realPersonCheck": "无真人形象。",
+      "ipCheck": "按用户指定形象制作，保留第三方角色特征。",
+      "status": "internal-review"
+    },
+    "kangaroo.model": {
+      "id": "kangaroo.model",
+      "path": "./assets/fighters/kangaroo-model.webp",
+      "use": "全身选手图",
+      "author": "用户样例与项目动作制作",
+      "source": "用户提供的门口袋鼠全身",
+      "license": "仅供个人试玩与内部评审，公开使用条件待核实。",
+      "realPersonCheck": "无真人形象。",
+      "ipCheck": "按用户指定形象制作，保留第三方角色特征。",
+      "status": "internal-review"
+    },
+    "kangaroo-A": {
+      "id": "kangaroo-A",
+      "path": "./assets/fighters/kangaroo-A.webp",
+      "use": "R1逐帧战斗图集",
+      "author": "用户样例与项目动作制作",
+      "source": "用户提供的门口袋鼠全身",
+      "license": "仅供个人试玩与内部评审，公开使用条件待核实。",
+      "realPersonCheck": "无真人形象。",
+      "ipCheck": "按用户指定形象制作，保留第三方角色特征。",
+      "status": "internal-review"
+    },
+    "kangaroo-B": {
+      "id": "kangaroo-B",
+      "path": "./assets/fighters/kangaroo-B.webp",
+      "use": "R1逐帧战斗图集",
+      "author": "用户样例与项目动作制作",
+      "source": "用户提供的门口袋鼠全身",
+      "license": "仅供个人试玩与内部评审，公开使用条件待核实。",
+      "realPersonCheck": "无真人形象。",
+      "ipCheck": "按用户指定形象制作，保留第三方角色特征。",
+      "status": "internal-review"
+    },
+    "kangaroo-C": {
+      "id": "kangaroo-C",
+      "path": "./assets/fighters/kangaroo-C.webp",
+      "use": "R1逐帧战斗图集",
+      "author": "用户样例与项目动作制作",
+      "source": "用户提供的门口袋鼠全身",
+      "license": "仅供个人试玩与内部评审，公开使用条件待核实。",
+      "realPersonCheck": "无真人形象。",
+      "ipCheck": "按用户指定形象制作，保留第三方角色特征。",
+      "status": "internal-review"
+    },
+    "kangaroo-D": {
+      "id": "kangaroo-D",
+      "path": "./assets/fighters/kangaroo-D.webp",
+      "use": "R1逐帧战斗图集",
+      "author": "用户样例与项目动作制作",
+      "source": "用户提供的门口袋鼠全身",
+      "license": "仅供个人试玩与内部评审，公开使用条件待核实。",
+      "realPersonCheck": "无真人形象。",
+      "ipCheck": "按用户指定形象制作，保留第三方角色特征。",
+      "status": "internal-review"
+    },
+    "dragon.model": {
+      "id": "dragon.model",
+      "path": "./assets/fighters/dragon-model.webp",
+      "use": "全身选手图",
+      "author": "用户样例与项目动作制作",
+      "source": "用户四格中挥手的奶龙全身",
+      "license": "仅供个人试玩与内部评审，公开使用条件待核实。",
+      "realPersonCheck": "无真人形象。",
+      "ipCheck": "按用户指定形象制作，保留第三方角色特征。",
+      "status": "internal-review"
+    },
+    "dragon-A": {
+      "id": "dragon-A",
+      "path": "./assets/fighters/dragon-A.webp",
+      "use": "R1逐帧战斗图集",
+      "author": "用户样例与项目动作制作",
+      "source": "用户四格中挥手的奶龙全身",
+      "license": "仅供个人试玩与内部评审，公开使用条件待核实。",
+      "realPersonCheck": "无真人形象。",
+      "ipCheck": "按用户指定形象制作，保留第三方角色特征。",
+      "status": "internal-review"
+    },
+    "dragon-B": {
+      "id": "dragon-B",
+      "path": "./assets/fighters/dragon-B.webp",
+      "use": "R1逐帧战斗图集",
+      "author": "用户样例与项目动作制作",
+      "source": "用户四格中挥手的奶龙全身",
+      "license": "仅供个人试玩与内部评审，公开使用条件待核实。",
+      "realPersonCheck": "无真人形象。",
+      "ipCheck": "按用户指定形象制作，保留第三方角色特征。",
+      "status": "internal-review"
+    },
+    "dragon-C": {
+      "id": "dragon-C",
+      "path": "./assets/fighters/dragon-C.webp",
+      "use": "R1逐帧战斗图集",
+      "author": "用户样例与项目动作制作",
+      "source": "用户四格中挥手的奶龙全身",
+      "license": "仅供个人试玩与内部评审，公开使用条件待核实。",
+      "realPersonCheck": "无真人形象。",
+      "ipCheck": "按用户指定形象制作，保留第三方角色特征。",
+      "status": "internal-review"
+    },
+    "dragon-D": {
+      "id": "dragon-D",
+      "path": "./assets/fighters/dragon-D.webp",
+      "use": "R1逐帧战斗图集",
+      "author": "用户样例与项目动作制作",
+      "source": "用户四格中挥手的奶龙全身",
+      "license": "仅供个人试玩与内部评审，公开使用条件待核实。",
+      "realPersonCheck": "无真人形象。",
+      "ipCheck": "按用户指定形象制作，保留第三方角色特征。",
+      "status": "internal-review"
+    }
+  },
+  "ai": {
+    "melancholy": {
+      "meleeRange": 1.1,
+      "approachRange": 1.1
+    },
+    "laughing": {
+      "meleeRange": 1.1,
+      "approachRange": 1.8
+    },
+    "sacred": {
+      "meleeRange": 1.1,
+      "approachRange": 1.8
+    },
+    "courier": {
+      "meleeRange": 1.1,
+      "approachRange": 2.4
+    },
+    "nailong": {
+      "meleeRange": 1.1,
+      "approachRange": 2
+    },
+    "doubao": {
+      "meleeRange": 1.1,
+      "approachRange": 3
+    }
+  },
+  "initialCharacters": [
+    "melancholy",
+    "laughing",
+    "sacred",
+    "courier",
+    "nailong",
+    "doubao"
+  ],
+  "replacedUnlocks": {
+    "stage_01": null
+  },
+  "rules": {
+    "resetComboOnStunExit": true
+  },
+  "stageOpponents": {
+    "stage_03": {
+      "replace": {
+        "cloud": "sacred"
+      },
+      "description": "挑战训练型神圣奶蛙。避开地面光环，留心蓄势落点的预警。"
+    }
+  },
+  "animationLayout": {
+    "cell": [
+      256,
+      256
+    ],
+    "pivot": [
+      128,
+      232
+    ],
+    "rows": 4,
+    "columns": 4,
+    "actions": [
+      {
+        "id": "idle",
+        "label": "待机",
+        "sheet": "A",
+        "row": 0,
+        "loop": true,
+        "durations": [
+          9,
+          9,
+          9,
+          9
+        ]
+      },
+      {
+        "id": "move",
+        "label": "移动",
+        "sheet": "A",
+        "row": 1,
+        "loop": true,
+        "durations": [
+          5,
+          5,
+          5,
+          5
+        ]
+      },
+      {
+        "id": "evade",
+        "label": "闪避",
+        "sheet": "A",
+        "row": 2,
+        "loop": false,
+        "durations": [
+          3,
+          5,
+          5,
+          10
+        ]
+      },
+      {
+        "id": "escape",
+        "label": "受击脱身",
+        "sheet": "A",
+        "row": 3,
+        "loop": false,
+        "durations": [
+          2,
+          4,
+          6,
+          6
+        ]
+      },
+      {
+        "id": "hit",
+        "label": "受击",
+        "sheet": "B",
+        "row": 0,
+        "loop": false,
+        "durations": [
+          2,
+          3,
+          4,
+          5
+        ]
+      },
+      {
+        "id": "down",
+        "label": "倒地",
+        "sheet": "B",
+        "row": 1,
+        "loop": false,
+        "durations": [
+          5,
+          6,
+          8,
+          17
+        ]
+      },
+      {
+        "id": "getup",
+        "label": "起身",
+        "sheet": "B",
+        "row": 2,
+        "loop": false,
+        "durations": [
+          6,
+          8,
+          8,
+          8
+        ]
+      },
+      {
+        "id": "death",
+        "label": "死亡",
+        "sheet": "B",
+        "row": 3,
+        "loop": false,
+        "durations": [
+          6,
+          8,
+          10,
+          14
+        ]
+      },
+      {
+        "id": "basic1",
+        "label": "普攻一段",
+        "sheet": "C",
+        "row": 0,
+        "loop": false
+      },
+      {
+        "id": "basic2",
+        "label": "普攻二段",
+        "sheet": "C",
+        "row": 1,
+        "loop": false
+      },
+      {
+        "id": "basic3",
+        "label": "普攻三段",
+        "sheet": "C",
+        "row": 2,
+        "loop": false
+      },
+      {
+        "id": "block",
+        "label": "防守姿态",
+        "sheet": "C",
+        "row": 3,
+        "loop": false,
+        "durations": [
+          5,
+          7,
+          8,
+          6
+        ]
+      },
+      {
+        "id": "skill1",
+        "label": "技能一",
+        "sheet": "D",
+        "row": 0,
+        "loop": false
+      },
+      {
+        "id": "skill2",
+        "label": "技能二",
+        "sheet": "D",
+        "row": 1,
+        "loop": false
+      },
+      {
+        "id": "ult",
+        "label": "奥义",
+        "sheet": "D",
+        "row": 2,
+        "loop": false
+      },
+      {
+        "id": "victory",
+        "label": "胜利",
+        "sheet": "D",
+        "row": 3,
+        "loop": false,
+        "durations": [
+          8,
+          10,
+          12,
+          18
+        ]
+      }
+    ]
+  }
+}

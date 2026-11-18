@@ -15,9 +15,12 @@ from playwright.sync_api import expect, sync_playwright
 ROOT = Path(__file__).resolve().parents[1]
 CONFIG = json.loads((ROOT / "src/game/data/game.json").read_text(encoding="utf-8"))
 COPY = CONFIG["uiText"]
+FIGHTERS = json.loads((ROOT / "src/game/data" / CONFIG["fighterModule"]).read_text(encoding="utf-8"))
+INITIAL_FIGHTER = FIGHTERS["characters"][FIGHTERS["roster"][0]]
 EVIDENCE = ROOT / "production/qa/evidence"
 PORT = 4177
 ORIGIN = f"http://127.0.0.1:{PORT}"
+ACTION_KEYS = (["J", "K", "L", "U", "I"], ["1", "2", "3", "4", "5"])
 
 
 @contextmanager
@@ -49,6 +52,66 @@ def click(page, text):
     page.get_by_role("button", name=text, exact=True).click(timeout=8000)
 
 
+def check_key_settings(page):
+    def player_one_skill(key):
+        return page.get_by_role("button", name=f"玩家 1 技能一 {key}", exact=True)
+
+    click(page, "设置")
+    expect(player_one_skill("K")).to_be_visible()
+    expect(page.get_by_role("button", name="玩家 2 普攻 1", exact=True)).to_be_visible()
+    player_one_skill("K").click()
+    page.keyboard.press("Numpad2")
+    expect(page.locator(".errorline")).to_contain_text(re.compile("占用|已有动作"))
+    player_one_skill("K").click()
+    page.keyboard.press("b")
+    click(page, "保存设置")
+    expect(page.get_by_role("dialog", name="操作设置")).to_have_count(0)
+    page.reload()
+    click(page, "设置")
+    expect(player_one_skill("B")).to_be_visible()
+    click(page, "恢复默认键位")
+    expect(player_one_skill("K")).to_be_visible()
+    click(page, "保存设置")
+    expect(page.get_by_role("dialog", name="操作设置")).to_have_count(0)
+
+
+def enter_local_duel(page):
+    page.get_by_role("button", name=COPY["pvp"], exact=False).click()
+    expect(page.get_by_role("button", name="开始双人对战")).to_be_disabled()
+    for slot, movement in enumerate((["W", "A", "S", "D"], ["↑", "↓", "←", "→"])):
+        help_panel = page.locator(".keyhelp").nth(slot)
+        spare = ["O", "6"][slot]
+        expect(help_panel.locator("kbd")).to_have_text(movement + ACTION_KEYS[slot] + [spare])
+        expect(help_panel).to_contain_text("预留")
+    expect(page.locator(".keyhelp").nth(1)).to_contain_text("小键盘")
+    click(page, "玩家 1 就绪")
+    click(page, "玩家 2 就绪")
+    click(page, "开始双人对战")
+    expect(page.locator("canvas")).to_be_visible()
+    for slot, keys in enumerate(ACTION_KEYS):
+        expect(page.locator(".skill-strip").nth(slot).locator(".hud-skill kbd")).to_have_text(keys)
+
+
+def action_cell(page, slot, key):
+    return page.locator(".skill-strip").nth(slot).locator(".hud-skill").filter(
+        has=page.get_by_text(key, exact=True)
+    )
+
+
+def check_cooldown(page, slot, key):
+    cell = action_cell(page, slot, key)
+    expect(cell).to_have_attribute("data-ready", "false")
+    expect(cell.locator("small")).to_have_text(re.compile(r"^[1-9]\d*s$"))
+
+
+def simultaneous_keys(page, first, second):
+    page.keyboard.down(first)
+    page.keyboard.down(second)
+    page.clock.run_for(35)
+    page.keyboard.up(first)
+    page.keyboard.up(second)
+
+
 def smoke(browser):
     ctx = browser.new_context(viewport={"width": 1366, "height": 850}, locale="zh-CN",
                               device_scale_factor=1, reduced_motion="reduce")
@@ -61,6 +124,7 @@ def smoke(browser):
     expect(page.get_by_role("button", name=COPY["heroAction"], exact=True)).to_be_visible()
     expect(page.locator(".hero-img")).to_have_js_property("complete", True)
     assert page.locator(".hero-img").evaluate("img=>img.naturalWidth > 0")
+    check_key_settings(page)
     capture(page, "lobby")
     click(page, COPY["characters"])
     capture(page, "fighters")
@@ -69,9 +133,17 @@ def smoke(browser):
     capture(page, "stages")
     click(page, COPY["home"])
     click(page, COPY["heroAction"])
+    choices = page.locator(".pick-grid .fighter")
+    expect(choices).to_have_count(len(FIGHTERS["roster"]))
+    for fighter_id in FIGHTERS["roster"]:
+        expect(choices.filter(has_text=FIGHTERS["characters"][fighter_id]["name"])).to_have_count(1)
+    scenes = page.locator(".scene-option")
+    expect(scenes).to_have_count(len(CONFIG["scenes"]))
+    scenes.filter(has_text="雨拍站前").click()
     capture(page, "select")
     click(page, "开始人机对战")
     expect(page.locator("canvas")).to_be_visible()
+    expect(page.locator("canvas")).to_have_attribute("aria-label", re.compile("雨拍站前"))
     page.clock.run_for(350)
     capture(page, "battle")
     page.keyboard.down("d")
@@ -95,35 +167,29 @@ def smoke(browser):
     capture(page, "match-result")
     click(page, "再来一局")
     expect(page.locator("canvas")).to_be_visible()
-    base_hp = CONFIG["characters"][CONFIG["economy"]["initialCharacter"]]["hp"]
+    expect(page.locator("canvas")).to_have_attribute("aria-label", re.compile("雨拍站前"))
+    base_hp = INITIAL_FIGHTER["hp"]
     expect(page.locator(".vitals .hud-name small").first).to_have_text(f"{base_hp} / {base_hp}")
     page.keyboard.press("Escape")
     click(page, "退出到大厅")
 
-    page.get_by_role("button", name=COPY["pvp"], exact=False).click()
-    expect(page.get_by_role("button", name="开始双人对战")).to_be_disabled()
-    click(page, "玩家 1 就绪")
-    click(page, "玩家 2 就绪")
-    click(page, "开始双人对战")
-    expect(page.locator("canvas")).to_be_visible()
-    page.keyboard.down("d")
-    page.keyboard.down("ArrowLeft")
+    enter_local_duel(page)
+    page.keyboard.down("a")
+    page.keyboard.down("ArrowRight")
     page.clock.run_for(550)
-    page.keyboard.up("d")
-    page.keyboard.up("ArrowLeft")
-    page.keyboard.press("g")
-    page.keyboard.press("k")
-    page.clock.run_for(250)
-    # Both ultimates are unavailable at spawn. Verify each skill separately
-    # so an unrelated unavailable action cannot mask a missing player input.
-    strips = page.locator(".skill-strip")
-    expect(strips).to_have_count(2)
-    for index, key in enumerate(("G", "K")):
-        skill = strips.nth(index).locator(".hud-skill").filter(
-            has=page.get_by_text(key, exact=True)
-        )
-        expect(skill).to_have_attribute("data-ready", "false")
-        expect(skill.locator("small")).to_have_text(re.compile(r"^[1-9]\d*s$"))
+    page.keyboard.up("a")
+    page.keyboard.up("ArrowRight")
+    simultaneous_keys(page, "k", "Digit2")
+    check_cooldown(page, 0, "K")
+    check_cooldown(page, 1, "2")
+    page.clock.run_for(900)
+    page.keyboard.press("Numpad3")
+    page.clock.run_for(40)
+    check_cooldown(page, 1, "3")
+    expect(action_cell(page, 0, "L")).to_have_attribute("data-ready", "true")
+    page.keyboard.press("l")
+    page.clock.run_for(40)
+    check_cooldown(page, 0, "L")
     page.keyboard.press("Escape")
     click(page, "退出到大厅")
     page.set_viewport_size({"width": 410, "height": 850})
@@ -134,7 +200,9 @@ def smoke(browser):
 
 
 def portable(browser):
-    page = browser.new_page(viewport={"width": 1366, "height": 850})
+    ctx = browser.new_context(viewport={"width": 1366, "height": 850}, offline=True)
+    page = ctx.new_page()
+    page.clock.install()
     errors, external = [], []
     page.on("pageerror", lambda err: errors.append(str(err)))
     page.on("request", lambda req: external.append(req.url) if req.url.startswith(("http:", "https:")) else None)
@@ -142,10 +210,16 @@ def portable(browser):
     click(page, COPY["heroAction"])
     click(page, "开始人机对战")
     expect(page.locator("canvas")).to_be_visible()
-    expect(page.locator(".hud-name b").first).to_have_text(CONFIG["characters"][CONFIG["economy"]["initialCharacter"]]["name"])
+    expect(page.locator(".hud-name b").first).to_have_text(INITIAL_FIGHTER["name"])
     expect(page.locator(".clock b")).not_to_have_text("")
+    page.keyboard.press("Escape")
+    click(page, "退出到大厅")
+    enter_local_duel(page)
+    simultaneous_keys(page, "u", "Numpad4")
+    check_cooldown(page, 0, "U")
+    check_cooldown(page, 1, "4")
     assert not errors and not external, (errors, external)
-    page.close()
+    ctx.close()
 
 
 if __name__ == "__main__":

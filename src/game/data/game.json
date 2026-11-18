@@ -1,5 +1,12 @@
 {
-  "version": "0.1.0",
+  "fighterModule": "fighters-v04.json",
+  "version": "0.1.3",
+  "fighterAudio": {
+    "banks": {"melancholy":"melancholy", "laughing":"laughing", "sacred":"sacred", "nailong":"dragon", "courier":"kangaroo"},
+    "stepFrames": 15,
+    "heavyStartup": 18,
+    "gains": {"basic1":0.79, "basic2":0.79, "basic3":0.81, "skill1":0.82, "skill2":0.82, "ult":0.86, "hit":0.48, "block":0.73, "move":0.48, "evade":0.66, "windup":0.51, "victory":0.85}
+  },
   "tuningNote": "假设值。时序与冷却单位为逻辑帧，坐标与尺寸单位为 U，速度单位为 U/秒。",
   "rules": {
     "tickRate": 60,
@@ -35,7 +42,14 @@
     "inputBuffer": 6,
     "cancelAfterHitFrames": 3,
     "duelLimit": 7200,
-    "resumeSeconds": 3
+    "resumeSeconds": 3,
+    "impactHoldFrames": {
+      "light": 2,
+      "medium": 3,
+      "heavy": 5,
+      "ultimate": 7,
+      "guard": 3
+    }
   },
   "characters": {
     "shell": {
@@ -602,22 +616,22 @@
       "down": "KeyS",
       "left": "KeyA",
       "right": "KeyD",
-      "basic": "KeyF",
-      "s1": "KeyG",
-      "s2": "KeyH",
-      "defend": "KeyR",
-      "ult": "KeyT"
+      "basic": "KeyJ",
+      "s1": "KeyK",
+      "s2": "KeyL",
+      "defend": "KeyU",
+      "ult": "KeyI"
     },
     "p2": {
       "up": "ArrowUp",
       "down": "ArrowDown",
       "left": "ArrowLeft",
       "right": "ArrowRight",
-      "basic": "KeyJ",
-      "s1": "KeyK",
-      "s2": "KeyL",
-      "defend": "KeyO",
-      "ult": "KeyP"
+      "basic": "Digit1",
+      "s1": "Digit2",
+      "s2": "Digit3",
+      "defend": "Digit4",
+      "ult": "Digit5"
     }
   },
   "assets": {
@@ -665,17 +679,6 @@
       "ipCheck": "独立绘制，无第三方原画或标志。",
       "status": "prototype"
     },
-    "arena": {
-      "id": "arena",
-      "path": "./assets/arena-poster.svg",
-      "use": "训练场海报",
-      "author": "项目制作组",
-      "source": "本版本原创矢量图形及程序绘制",
-      "license": "项目原创原型素材；对外发布授权待核。",
-      "realPersonCheck": "使用非人形几何造型，无真人姓名或肖像。",
-      "ipCheck": "独立绘制，无第三方原画或标志。",
-      "status": "prototype"
-    },
     "arenaFx": {
       "id": "arenaFx",
       "path": "./art.mjs",
@@ -709,15 +712,59 @@
       "ipCheck": "未引入第三方游戏界面素材。",
       "status": "prototype"
     },
-    "field": {
-      "id": "field",
-      "path": "./assets/arena-field.svg",
-      "use": "战斗场景背景",
-      "author": "项目制作组",
-      "source": "本版本原创矢量图形及程序绘制",
-      "license": "项目原创原型素材；对外发布授权待核。",
-      "realPersonCheck": "使用非人形几何造型，无真人姓名或肖像。",
-      "ipCheck": "独立绘制，无第三方原画或标志。",
+    "echo-workshop": {
+      "id": "echo-workshop",
+      "path": "./assets/scenes/echo-workshop.webp",
+      "use": "起步台选场预览及战斗背景",
+      "author": "项目场景模块",
+      "source": "春日陶石回响工坊，使用模块原图的 WebP 转码。",
+      "license": "项目原型内使用，对外发布授权待核。",
+      "realPersonCheck": "空场景图，未见真人肖像。",
+      "ipCheck": "人工检查画面，未见现有 IP 角色、文字或标志。",
+      "status": "prototype"
+    },
+    "lantern-stage": {
+      "id": "lantern-stage",
+      "path": "./assets/scenes/lantern-stage.webp",
+      "use": "折光拍场选场预览及战斗背景",
+      "author": "项目场景模块",
+      "source": "午夜折光纸灯舞台，使用模块原图的 WebP 转码。",
+      "license": "项目原型内使用，对外发布授权待核。",
+      "realPersonCheck": "空场景图，未见真人肖像。",
+      "ipCheck": "人工检查画面，未见现有 IP 角色、文字或标志。",
+      "status": "prototype"
+    },
+    "melon-market": {
+      "id": "melon-market",
+      "path": "./assets/scenes/melon-market.webp",
+      "use": "瓜棚午市选场预览及战斗背景",
+      "author": "项目场景模块",
+      "source": "瓜棚午市，使用模块原图的 WebP 转码。",
+      "license": "项目原型内使用，对外发布授权待核。",
+      "realPersonCheck": "空场景图，未见真人肖像。",
+      "ipCheck": "人工检查画面，未见现有 IP 角色、文字或标志。",
+      "status": "prototype"
+    },
+    "bamboo-hall": {
+      "id": "bamboo-hall",
+      "path": "./assets/scenes/bamboo-hall.webp",
+      "use": "听竹议厅选场预览及战斗背景",
+      "author": "项目场景模块",
+      "source": "听竹议厅竹编会堂，使用模块原图的 WebP 转码。",
+      "license": "项目原型内使用，对外发布授权待核。",
+      "realPersonCheck": "空场景图，未见真人肖像。",
+      "ipCheck": "人工检查画面，未见现有 IP 角色、文字或标志。",
+      "status": "prototype"
+    },
+    "rain-tram": {
+      "id": "rain-tram",
+      "path": "./assets/scenes/rain-tram.webp",
+      "use": "雨拍站前选场预览及战斗背景",
+      "author": "项目场景模块",
+      "source": "蓝调雨幕下的旧电车站，使用模块原图的 WebP 转码。",
+      "license": "项目原型内使用，对外发布授权待核。",
+      "realPersonCheck": "空场景图，未见真人肖像。",
+      "ipCheck": "人工检查画面，未见现有 IP 角色、文字或标志。",
       "status": "prototype"
     }
   },
@@ -736,5 +783,38 @@
     "pveDescription": "突破训练关卡，解锁角色与升级。",
     "pvpDescription": "两位玩家共用键盘，各自选角。",
     "trainingDescription": "面对静止目标，试招与练习连段。"
+  },
+  "defaultScene": "echo-workshop",
+  "scenes": {
+    "echo-workshop": {
+      "id": "echo-workshop",
+      "name": "起步台",
+      "asset": "echo-workshop",
+      "alt": "春日陶石回响工坊"
+    },
+    "lantern-stage": {
+      "id": "lantern-stage",
+      "name": "折光拍场",
+      "asset": "lantern-stage",
+      "alt": "午夜折光纸灯舞台"
+    },
+    "melon-market": {
+      "id": "melon-market",
+      "name": "瓜棚午市",
+      "asset": "melon-market",
+      "alt": "瓜棚午市"
+    },
+    "bamboo-hall": {
+      "id": "bamboo-hall",
+      "name": "听竹议厅",
+      "asset": "bamboo-hall",
+      "alt": "听竹议厅竹编会堂"
+    },
+    "rain-tram": {
+      "id": "rain-tram",
+      "name": "雨拍站前",
+      "asset": "rain-tram",
+      "alt": "蓝调雨幕下的旧电车站"
+    }
   }
 }
