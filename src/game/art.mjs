@@ -1,4 +1,6 @@
 // Presentation only. All positions, timelines and hit shapes come from the battle snapshot.
+import {drawScenePerformance, fighterPerformance} from './scene-performance.mjs';
+
 const pictures = new Map();
 const effects = new WeakMap();
 const reducedMotion = globalThis.matchMedia?.('(prefers-reduced-motion: reduce)');
@@ -277,7 +279,7 @@ function drawActor(ctx, view, battle, actor, reduced, contact) {
   const footY = view.y(actor.y - (contact?.hit.pushY ?? 0)*settle);
   const size = fighterSize(view,battle.config.rules,actor.y);
   const color = teamInk(actor.team);
-  const p = frame ? {angle:0,sx:1,sy:1,lift:0,forward:0} : pose(actor, reduced);
+  const p = frame ? fighterPerformance(battle, actor, reduced) : pose(actor, reduced);
   const dead = actor.state === 'DEAD';
   const guarded = ['GETUP','EVADE','ESCAPE'].includes(actor.state);
   ctx.save();
@@ -599,6 +601,7 @@ export function drawArena(canvas, battle, settings = {}) {
   const fx = recordBattleFeedback(battle);
   if (!reduced) cameraImpulse(ctx,view,fx);
   drawBackdrop(ctx, view, battle);
+  drawScenePerformance(ctx, view, battle);
   const entities = [];
   for (const e of battle.entities) {
     if (e.kind === 'field' || e.kind === 'marker') drawGroundEffect(ctx,view,e,battle.frame);

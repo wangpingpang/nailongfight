@@ -1,3 +1,4 @@
+import {createPerformance, updatePerformance} from './scene-performance.mjs';
 import {beginModuleCast, expireModuleZones, firstModuleHit, moduleAction,
   moduleHitCoefficient, placeModuleZones, walkingScale} from './module-combat.mjs'
 
@@ -43,7 +44,7 @@ function resetCombo(a) {
 export function createBattle(config, { id = globalThis.crypto.randomUUID(), mode, actors }) {
   const b = {
     id, mode, config: structuredClone(config), frame: 0, actors: [], entities: [],
-    telegraphs: [], events: [], result: null, nextCast: 1,
+    performance: createPerformance(), telegraphs: [], events: [], result: null, nextCast: 1,
   }
   for (const spec of actors) addActor(b, spec)
   return b
@@ -512,6 +513,7 @@ export function stepBattle(b, intents = {}) {
     if (a.state === 'HIT' && a.lockFrames >= b.config.rules.comboLockLimit) knockDown(b, a)
   }
   b.entities = b.entities.filter(e => !e.spent && b.actors.some(a => a.id === e.ownerId && a.hp > 0))
+  updatePerformance(b, attacks)
   decide(b)
   if (b.result) b.entities = []
   return b
