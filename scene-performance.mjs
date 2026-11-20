@@ -77,8 +77,12 @@ export function performanceCaption(battle) {
   const line = battle.performance.dialogue;
   const story = currentStory(battle);
   const subtitles = story?.beats.find(beat => beat.caption && story.age >= beat.at && story.age < beat.at + beat.hold);
-  return [line && battle.frame - line.frame < 2 * battle.config.rules.tickRate ? line.text : '',
-    subtitles?.caption].filter(Boolean).join('　');
+  const courier = line && battle.frame - line.frame < 2 * battle.config.rules.tickRate ? line.text : '';
+  const speaker = battle.actors.find(actor => actor.state === 'ULT' &&
+    battle.config.characters[actor.characterId]?.ultimateLine);
+  const profile = speaker && battle.config.characters[speaker.characterId];
+  const fighter = courier || (profile ? profile.name+'：'+profile.ultimateLine : '');
+  return [fighter, subtitles?.caption].filter(Boolean).join('　');
 }
 
 export function drawScenePerformance(ctx, view, battle, reduced = false) {

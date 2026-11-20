@@ -1,5 +1,5 @@
 {
-  "version": "T07-web.1",
+  "version": "T07-web.2",
   "fighterAudio": {
     "banks": {
       "melancholy": "pendulum",
@@ -179,12 +179,12 @@
     },
     "melancholy": {
       "id": "melancholy",
-      "name": "蓝摆针",
+      "name": "忧郁奶蛙",
       "role": "舞步反击",
-      "description": "回声工坊的校音师在壳里装了枚偏心摆锤。它用一拍后退量出对方的手长，下一拍把整副表盘旋回来。",
-      "theme": "节拍与闪身",
-      "playstyle": "退半步，把反击留给下一拍。",
-      "color": "#849DC9",
+      "description": "芦湾的雨点总慢它半拍。这只青蓝小蛙把斜叶系作围巾，每回退步都像打算回家，下一拍却会转身扫回来。",
+      "theme": "忧郁与舞步",
+      "playstyle": "用「回身慢步」引对手打空，看到拍点提示，再用「落拍回旋」反击。",
+      "color": "#68b0b5",
       "playable": true,
       "canDefend": true,
       "hp": 1000,
@@ -201,19 +201,20 @@
       "s2": "melancholy.s2",
       "ult": "melancholy.ult",
       "passive": "melancholy.passive",
-      "asset": "echo.pendulum.portrait",
+      "asset": "pond.melancholy.portrait",
       "ai": "melancholy",
       "presentation": "atlas",
-      "animation": "melancholy"
+      "animation": "melancholy",
+      "ultimateLine": "先等一拍。好了，轮到我。"
     },
     "laughing": {
       "id": "laughing",
-      "name": "簧鼓咚",
+      "name": "大笑奶蛙",
       "role": "弹跳扰阵",
-      "description": "这面定音鼓曾在合奏里漏掉一个重音。它给自己换上廊灯弹簧，此后总比指挥先一步跳上拍点。",
-      "theme": "鼓皮与弹簧",
-      "playstyle": "用弹簧跳击抢到对手身边，积起余振后用鼓腹震波扩大战果。",
-      "color": "#D1AC39",
+      "description": "它在池边讲笑话，最先笑出声的是自己的两腮。它发觉一落地水纹就能掀翻荷叶，从此每次开场都要先蹦一下。",
+      "theme": "大笑与弹跳",
+      "playstyle": "用「弹簧蹦跶」落地命中攒下笑意，再放「捧腹震波」打出更大范围。",
+      "color": "#b9d759",
       "playable": true,
       "canDefend": true,
       "hp": 1000,
@@ -230,19 +231,20 @@
       "s2": "laughing.s2",
       "ult": "laughing.ult",
       "passive": "laughing.passive",
-      "asset": "echo.drum.portrait",
+      "asset": "pond.laughing.portrait",
       "ai": "laughing",
       "presentation": "atlas",
-      "animation": "laughing"
+      "animation": "laughing",
+      "ultimateLine": "憋住了！哎，地面先笑了！"
     },
     "sacred": {
       "id": "sacred",
-      "name": "棱灯司",
+      "name": "神圣奶蛙",
       "role": "光环控场",
-      "description": "负责给夜班学徒照路的棱镜灯喜欢把光照得横平竖直。哪条路线越了线，它就把光束折回去。",
-      "theme": "投影与折射",
-      "playstyle": "先定下光域，再等一束垂光。",
-      "color": "#C5AA64",
+      "description": "这只薄荷绿树蛙负责池塘夜巡。它把一簇池火托得端端正正，哪怕一脚踩进泥里，也要先把身边的莲瓣理齐。",
+      "theme": "静心与蓄势",
+      "playstyle": "先铺「静光领域」减慢对手，在对手仍在环内时用「垂光落点」触发共鸣。",
+      "color": "#86d5bc",
       "playable": true,
       "canDefend": true,
       "hp": 1000,
@@ -259,10 +261,11 @@
       "s2": "sacred.s2",
       "ult": "sacred.ult",
       "passive": "sacred.passive",
-      "asset": "echo.prism.portrait",
+      "asset": "pond.sacred.portrait",
       "ai": "sacred",
       "presentation": "atlas",
-      "animation": "sacred"
+      "animation": "sacred",
+      "ultimateLine": "池火请就位。呃，别照我！"
     },
     "courier": {
       "id": "courier",
@@ -653,9 +656,9 @@
     },
     "melancholy.n1": {
       "id": "melancholy.n1",
-      "name": "试拍点刺",
+      "name": "探步掌",
       "kind": "basic",
-      "description": "前两段命中后可衔接下一段或普通技能，第三段以旋盘横扫击推开目标。",
+      "description": "前两段命中后可衔接下一段或普通技能，第三段以旋步扫击推开目标。",
       "startup": 8,
       "active": 3,
       "recovery": 10,
@@ -673,9 +676,9 @@
     },
     "melancholy.n2": {
       "id": "melancholy.n2",
-      "name": "反摆敲击",
+      "name": "回身拍",
       "kind": "basic",
-      "description": "前两段命中后可衔接下一段或普通技能，第三段以旋盘横扫击推开目标。",
+      "description": "前两段命中后可衔接下一段或普通技能，第三段以旋步扫击推开目标。",
       "startup": 9,
       "active": 3,
       "recovery": 12,
@@ -693,9 +696,9 @@
     },
     "melancholy.n3": {
       "id": "melancholy.n3",
-      "name": "旋盘横扫",
+      "name": "旋步扫",
       "kind": "basic",
-      "description": "前两段命中后可衔接下一段或普通技能，第三段以旋盘横扫击推开目标。",
+      "description": "前两段命中后可衔接下一段或普通技能，第三段以旋步扫击推开目标。",
       "startup": 12,
       "active": 4,
       "recovery": 20,
@@ -751,7 +754,7 @@
     },
     "melancholy.ult": {
       "id": "melancholy.ult",
-      "name": "整点独舞",
+      "name": "雨幕独舞",
       "kind": "ult",
       "description": "连续舞步后完成一次前方 2.4 × 1.4 U 的终结扫击并击倒；演出多姿态共用一次判定。",
       "startup": 48,
@@ -771,9 +774,9 @@
     },
     "laughing.n1": {
       "id": "laughing.n1",
-      "name": "鼓边轻点",
+      "name": "探掌",
       "kind": "basic",
-      "description": "先点鼓边，再回身敲击，最后以绷面回弹把目标推开。前两段命中后可衔接下一段或普通技能。",
+      "description": "伸掌试探接反手拍击，最后以弹腹把目标推开。前两段命中后可衔接下一段或普通技能。",
       "startup": 8,
       "active": 3,
       "recovery": 10,
@@ -791,9 +794,9 @@
     },
     "laughing.n2": {
       "id": "laughing.n2",
-      "name": "反拍双击",
+      "name": "反拍",
       "kind": "basic",
-      "description": "先点鼓边，再回身敲击，最后以绷面回弹把目标推开。前两段命中后可衔接下一段或普通技能。",
+      "description": "伸掌试探接反手拍击，最后以弹腹把目标推开。前两段命中后可衔接下一段或普通技能。",
       "startup": 9,
       "active": 3,
       "recovery": 12,
@@ -811,9 +814,9 @@
     },
     "laughing.n3": {
       "id": "laughing.n3",
-      "name": "绷面回弹",
+      "name": "弹腹",
       "kind": "basic",
-      "description": "先点鼓边，再回身敲击，最后以绷面回弹把目标推开。前两段命中后可衔接下一段或普通技能。",
+      "description": "伸掌试探接反手拍击，最后以弹腹把目标推开。前两段命中后可衔接下一段或普通技能。",
       "startup": 11,
       "active": 4,
       "recovery": 20,
@@ -831,9 +834,9 @@
     },
     "laughing.s1": {
       "id": "laughing.s1",
-      "name": "鼓腹震波",
+      "name": "捧腹震波",
       "kind": "skill",
-      "description": "自身半径 1.25 U 单次震波。合法起手时消耗余振，本次半径扩大至 1.6 U，伤害提高至 140。",
+      "description": "自身半径 1.25 U 单次震波。合法起手时消耗笑意，本次半径扩大至 1.6 U，伤害提高至 140。",
       "startup": 14,
       "active": 4,
       "recovery": 20,
@@ -851,7 +854,7 @@
     },
     "laughing.s2": {
       "id": "laughing.s2",
-      "name": "弹簧跳击",
+      "name": "弹簧蹦跶",
       "kind": "skill",
       "description": "向前跃进 1.8 U，落地在半径 0.9 U 内造成一次伤害。跳跃全程可受击，不提供无敌或空中免伤。",
       "startup": 24,
@@ -873,9 +876,9 @@
     },
     "laughing.ult": {
       "id": "laughing.ult",
-      "name": "满场齐鸣",
+      "name": "笑到震场",
       "kind": "ult",
-      "description": "原地蓄势鼓鸣，发出半径 2.2 U 的范围震波并击倒。三圈波纹只结算一次伤害，蓄势可被打断。",
+      "description": "原地蓄势大笑，发出半径 2.2 U 的范围震波并击倒。三圈波纹只结算一次伤害，蓄势可被打断。",
       "startup": 42,
       "active": 6,
       "recovery": 30,
@@ -893,9 +896,9 @@
     },
     "sacred.n1": {
       "id": "sacred.n1",
-      "name": "点灯推击",
+      "name": "轻推",
       "kind": "basic",
-      "description": "近身棱镜三连，前两段命中后可衔接下一段或普通技能，第三段推开目标。",
+      "description": "近身推掌三连，前两段命中后可衔接下一段或普通技能，第三段推开目标。",
       "startup": 8,
       "active": 3,
       "recovery": 10,
@@ -913,9 +916,9 @@
     },
     "sacred.n2": {
       "id": "sacred.n2",
-      "name": "双棱合击",
+      "name": "合掌",
       "kind": "basic",
-      "description": "近身棱镜三连，前两段命中后可衔接下一段或普通技能，第三段推开目标。",
+      "description": "近身推掌三连，前两段命中后可衔接下一段或普通技能，第三段推开目标。",
       "startup": 10,
       "active": 3,
       "recovery": 12,
@@ -933,9 +936,9 @@
     },
     "sacred.n3": {
       "id": "sacred.n3",
-      "name": "棱面外展",
+      "name": "展开推击",
       "kind": "basic",
-      "description": "近身棱镜三连，前两段命中后可衔接下一段或普通技能，第三段推开目标。",
+      "description": "近身推掌三连，前两段命中后可衔接下一段或普通技能，第三段推开目标。",
       "startup": 12,
       "active": 4,
       "recovery": 20,
@@ -1403,7 +1406,7 @@
     },
     "melancholy.passive": {
       "id": "melancholy.passive",
-      "name": "校时拍点",
+      "name": "踩准心拍",
       "description": "节拍只提高落拍回旋伤害，不改变前后摇、硬直或冷却。无效输入不预存强化，被打断时本次强化结束。",
       "type": "beat",
       "skill": "melancholy.s2",
@@ -1413,8 +1416,8 @@
     },
     "laughing.passive": {
       "id": "laughing.passive",
-      "name": "鼓腔共振",
-      "description": "弹簧跳击有效命中后获得余振，下次合法鼓腹震波起手时消耗并强化。最多 1 层，空放或中断不返还。",
+      "name": "笑点连锁",
+      "description": "弹簧蹦跶有效命中后获得笑意，下次合法捧腹震波起手时消耗并强化。最多 1 层，空放或中断不返还。",
       "type": "mirth",
       "skill": "laughing.s1",
       "grantSkill": "laughing.s2",
@@ -1537,7 +1540,7 @@
     "stage_03": {
       "id": "stage_03",
       "name": "回声擂台",
-      "description": "挑战训练型棱灯司。避开地面光环，留心蓄势落点的预警。",
+      "description": "挑战训练型神圣奶蛙。避开地面光环，留心蓄势落点的预警。",
       "waves": [
         [
           {
@@ -1789,204 +1792,6 @@
       "ipCheck": "人工检查画面，未见现有 IP 角色、文字或标志。",
       "status": "prototype"
     },
-    "echo.pendulum.portrait": {
-      "id": "echo.pendulum.portrait",
-      "path": "./assets/echo-crew/pendulum/portrait.svg",
-      "use": "蓝摆针 · 角色立绘",
-      "author": "回声练习场项目组",
-      "source": "为 T07 网页版独立绘制的机械角色矢量图。",
-      "license": "本项目原创网页版试玩素材。",
-      "realPersonCheck": "无真人姓名、肖像或声音。",
-      "ipCheck": "以乐器、灯具、折纸或工业器具构造角色，独立设计外形。",
-      "status": "web-prototype"
-    },
-    "echo.pendulum.A": {
-      "id": "echo.pendulum.A",
-      "path": "./assets/echo-crew/pendulum/A.svg",
-      "use": "蓝摆针 · 动作图集 A",
-      "author": "回声练习场项目组",
-      "source": "为 T07 网页版独立绘制的机械角色矢量图。",
-      "license": "本项目原创网页版试玩素材。",
-      "realPersonCheck": "无真人姓名、肖像或声音。",
-      "ipCheck": "以乐器、灯具、折纸或工业器具构造角色，独立设计外形。",
-      "status": "web-prototype"
-    },
-    "echo.pendulum.B": {
-      "id": "echo.pendulum.B",
-      "path": "./assets/echo-crew/pendulum/B.svg",
-      "use": "蓝摆针 · 动作图集 B",
-      "author": "回声练习场项目组",
-      "source": "为 T07 网页版独立绘制的机械角色矢量图。",
-      "license": "本项目原创网页版试玩素材。",
-      "realPersonCheck": "无真人姓名、肖像或声音。",
-      "ipCheck": "以乐器、灯具、折纸或工业器具构造角色，独立设计外形。",
-      "status": "web-prototype"
-    },
-    "echo.pendulum.C": {
-      "id": "echo.pendulum.C",
-      "path": "./assets/echo-crew/pendulum/C.svg",
-      "use": "蓝摆针 · 动作图集 C",
-      "author": "回声练习场项目组",
-      "source": "为 T07 网页版独立绘制的机械角色矢量图。",
-      "license": "本项目原创网页版试玩素材。",
-      "realPersonCheck": "无真人姓名、肖像或声音。",
-      "ipCheck": "以乐器、灯具、折纸或工业器具构造角色，独立设计外形。",
-      "status": "web-prototype"
-    },
-    "echo.pendulum.D": {
-      "id": "echo.pendulum.D",
-      "path": "./assets/echo-crew/pendulum/D.svg",
-      "use": "蓝摆针 · 动作图集 D",
-      "author": "回声练习场项目组",
-      "source": "为 T07 网页版独立绘制的机械角色矢量图。",
-      "license": "本项目原创网页版试玩素材。",
-      "realPersonCheck": "无真人姓名、肖像或声音。",
-      "ipCheck": "以乐器、灯具、折纸或工业器具构造角色，独立设计外形。",
-      "status": "web-prototype"
-    },
-    "echo.pendulum.E": {
-      "id": "echo.pendulum.E",
-      "path": "./assets/echo-crew/pendulum/E.svg",
-      "use": "蓝摆针 · 动作图集 E",
-      "author": "回声练习场项目组",
-      "source": "为 T07 网页版独立绘制的机械角色矢量图。",
-      "license": "本项目原创网页版试玩素材。",
-      "realPersonCheck": "无真人姓名、肖像或声音。",
-      "ipCheck": "以乐器、灯具、折纸或工业器具构造角色，独立设计外形。",
-      "status": "web-prototype"
-    },
-    "echo.drum.portrait": {
-      "id": "echo.drum.portrait",
-      "path": "./assets/echo-crew/drum/portrait.svg",
-      "use": "簧鼓咚 · 角色立绘",
-      "author": "回声练习场项目组",
-      "source": "为 T07 网页版独立绘制的机械角色矢量图。",
-      "license": "本项目原创网页版试玩素材。",
-      "realPersonCheck": "无真人姓名、肖像或声音。",
-      "ipCheck": "以乐器、灯具、折纸或工业器具构造角色，独立设计外形。",
-      "status": "web-prototype"
-    },
-    "echo.drum.A": {
-      "id": "echo.drum.A",
-      "path": "./assets/echo-crew/drum/A.svg",
-      "use": "簧鼓咚 · 动作图集 A",
-      "author": "回声练习场项目组",
-      "source": "为 T07 网页版独立绘制的机械角色矢量图。",
-      "license": "本项目原创网页版试玩素材。",
-      "realPersonCheck": "无真人姓名、肖像或声音。",
-      "ipCheck": "以乐器、灯具、折纸或工业器具构造角色，独立设计外形。",
-      "status": "web-prototype"
-    },
-    "echo.drum.B": {
-      "id": "echo.drum.B",
-      "path": "./assets/echo-crew/drum/B.svg",
-      "use": "簧鼓咚 · 动作图集 B",
-      "author": "回声练习场项目组",
-      "source": "为 T07 网页版独立绘制的机械角色矢量图。",
-      "license": "本项目原创网页版试玩素材。",
-      "realPersonCheck": "无真人姓名、肖像或声音。",
-      "ipCheck": "以乐器、灯具、折纸或工业器具构造角色，独立设计外形。",
-      "status": "web-prototype"
-    },
-    "echo.drum.C": {
-      "id": "echo.drum.C",
-      "path": "./assets/echo-crew/drum/C.svg",
-      "use": "簧鼓咚 · 动作图集 C",
-      "author": "回声练习场项目组",
-      "source": "为 T07 网页版独立绘制的机械角色矢量图。",
-      "license": "本项目原创网页版试玩素材。",
-      "realPersonCheck": "无真人姓名、肖像或声音。",
-      "ipCheck": "以乐器、灯具、折纸或工业器具构造角色，独立设计外形。",
-      "status": "web-prototype"
-    },
-    "echo.drum.D": {
-      "id": "echo.drum.D",
-      "path": "./assets/echo-crew/drum/D.svg",
-      "use": "簧鼓咚 · 动作图集 D",
-      "author": "回声练习场项目组",
-      "source": "为 T07 网页版独立绘制的机械角色矢量图。",
-      "license": "本项目原创网页版试玩素材。",
-      "realPersonCheck": "无真人姓名、肖像或声音。",
-      "ipCheck": "以乐器、灯具、折纸或工业器具构造角色，独立设计外形。",
-      "status": "web-prototype"
-    },
-    "echo.drum.E": {
-      "id": "echo.drum.E",
-      "path": "./assets/echo-crew/drum/E.svg",
-      "use": "簧鼓咚 · 动作图集 E",
-      "author": "回声练习场项目组",
-      "source": "为 T07 网页版独立绘制的机械角色矢量图。",
-      "license": "本项目原创网页版试玩素材。",
-      "realPersonCheck": "无真人姓名、肖像或声音。",
-      "ipCheck": "以乐器、灯具、折纸或工业器具构造角色，独立设计外形。",
-      "status": "web-prototype"
-    },
-    "echo.prism.portrait": {
-      "id": "echo.prism.portrait",
-      "path": "./assets/echo-crew/prism/portrait.svg",
-      "use": "棱灯司 · 角色立绘",
-      "author": "回声练习场项目组",
-      "source": "为 T07 网页版独立绘制的机械角色矢量图。",
-      "license": "本项目原创网页版试玩素材。",
-      "realPersonCheck": "无真人姓名、肖像或声音。",
-      "ipCheck": "以乐器、灯具、折纸或工业器具构造角色，独立设计外形。",
-      "status": "web-prototype"
-    },
-    "echo.prism.A": {
-      "id": "echo.prism.A",
-      "path": "./assets/echo-crew/prism/A.svg",
-      "use": "棱灯司 · 动作图集 A",
-      "author": "回声练习场项目组",
-      "source": "为 T07 网页版独立绘制的机械角色矢量图。",
-      "license": "本项目原创网页版试玩素材。",
-      "realPersonCheck": "无真人姓名、肖像或声音。",
-      "ipCheck": "以乐器、灯具、折纸或工业器具构造角色，独立设计外形。",
-      "status": "web-prototype"
-    },
-    "echo.prism.B": {
-      "id": "echo.prism.B",
-      "path": "./assets/echo-crew/prism/B.svg",
-      "use": "棱灯司 · 动作图集 B",
-      "author": "回声练习场项目组",
-      "source": "为 T07 网页版独立绘制的机械角色矢量图。",
-      "license": "本项目原创网页版试玩素材。",
-      "realPersonCheck": "无真人姓名、肖像或声音。",
-      "ipCheck": "以乐器、灯具、折纸或工业器具构造角色，独立设计外形。",
-      "status": "web-prototype"
-    },
-    "echo.prism.C": {
-      "id": "echo.prism.C",
-      "path": "./assets/echo-crew/prism/C.svg",
-      "use": "棱灯司 · 动作图集 C",
-      "author": "回声练习场项目组",
-      "source": "为 T07 网页版独立绘制的机械角色矢量图。",
-      "license": "本项目原创网页版试玩素材。",
-      "realPersonCheck": "无真人姓名、肖像或声音。",
-      "ipCheck": "以乐器、灯具、折纸或工业器具构造角色，独立设计外形。",
-      "status": "web-prototype"
-    },
-    "echo.prism.D": {
-      "id": "echo.prism.D",
-      "path": "./assets/echo-crew/prism/D.svg",
-      "use": "棱灯司 · 动作图集 D",
-      "author": "回声练习场项目组",
-      "source": "为 T07 网页版独立绘制的机械角色矢量图。",
-      "license": "本项目原创网页版试玩素材。",
-      "realPersonCheck": "无真人姓名、肖像或声音。",
-      "ipCheck": "以乐器、灯具、折纸或工业器具构造角色，独立设计外形。",
-      "status": "web-prototype"
-    },
-    "echo.prism.E": {
-      "id": "echo.prism.E",
-      "path": "./assets/echo-crew/prism/E.svg",
-      "use": "棱灯司 · 动作图集 E",
-      "author": "回声练习场项目组",
-      "source": "为 T07 网页版独立绘制的机械角色矢量图。",
-      "license": "本项目原创网页版试玩素材。",
-      "realPersonCheck": "无真人姓名、肖像或声音。",
-      "ipCheck": "以乐器、灯具、折纸或工业器具构造角色，独立设计外形。",
-      "status": "web-prototype"
-    },
     "echo.glider.portrait": {
       "id": "echo.glider.portrait",
       "path": "./assets/echo-crew/glider/portrait.svg",
@@ -2129,6 +1934,204 @@
       "realPersonCheck": "无真人姓名、肖像或声音。",
       "ipCheck": "以乐器、灯具、折纸或工业器具构造角色，独立设计外形。",
       "status": "web-prototype"
+    },
+    "pond.melancholy.portrait": {
+      "id": "pond.melancholy.portrait",
+      "path": "./assets/pond-frogs/melancholy/portrait.svg",
+      "use": "忧郁奶蛙 · 角色立绘",
+      "author": "回声练习场项目组",
+      "source": "为 T07 网页版独立绘制的池塘蛙形选手，采用青蓝长叶、低垂眼睑和交叉滑步。",
+      "license": "本项目原创网页版试玩素材。",
+      "realPersonCheck": "虚构蛙形选手，造型中无真人肖像或商标。",
+      "ipCheck": "本版采用独立的形体、装饰和肢体造型。",
+      "status": "web-prototype"
+    },
+    "pond.melancholy.A": {
+      "id": "pond.melancholy.A",
+      "path": "./assets/pond-frogs/melancholy/A.svg",
+      "use": "忧郁奶蛙 · 战斗动作 A",
+      "author": "回声练习场项目组",
+      "source": "为 T07 网页版独立绘制的池塘蛙形选手，采用青蓝长叶、低垂眼睑和交叉滑步。",
+      "license": "本项目原创网页版试玩素材。",
+      "realPersonCheck": "虚构蛙形选手，造型中无真人肖像或商标。",
+      "ipCheck": "本版采用独立的形体、装饰和肢体造型。",
+      "status": "web-prototype"
+    },
+    "pond.melancholy.B": {
+      "id": "pond.melancholy.B",
+      "path": "./assets/pond-frogs/melancholy/B.svg",
+      "use": "忧郁奶蛙 · 战斗动作 B",
+      "author": "回声练习场项目组",
+      "source": "为 T07 网页版独立绘制的池塘蛙形选手，采用青蓝长叶、低垂眼睑和交叉滑步。",
+      "license": "本项目原创网页版试玩素材。",
+      "realPersonCheck": "虚构蛙形选手，造型中无真人肖像或商标。",
+      "ipCheck": "本版采用独立的形体、装饰和肢体造型。",
+      "status": "web-prototype"
+    },
+    "pond.melancholy.C": {
+      "id": "pond.melancholy.C",
+      "path": "./assets/pond-frogs/melancholy/C.svg",
+      "use": "忧郁奶蛙 · 战斗动作 C",
+      "author": "回声练习场项目组",
+      "source": "为 T07 网页版独立绘制的池塘蛙形选手，采用青蓝长叶、低垂眼睑和交叉滑步。",
+      "license": "本项目原创网页版试玩素材。",
+      "realPersonCheck": "虚构蛙形选手，造型中无真人肖像或商标。",
+      "ipCheck": "本版采用独立的形体、装饰和肢体造型。",
+      "status": "web-prototype"
+    },
+    "pond.melancholy.D": {
+      "id": "pond.melancholy.D",
+      "path": "./assets/pond-frogs/melancholy/D.svg",
+      "use": "忧郁奶蛙 · 战斗动作 D",
+      "author": "回声练习场项目组",
+      "source": "为 T07 网页版独立绘制的池塘蛙形选手，采用青蓝长叶、低垂眼睑和交叉滑步。",
+      "license": "本项目原创网页版试玩素材。",
+      "realPersonCheck": "虚构蛙形选手，造型中无真人肖像或商标。",
+      "ipCheck": "本版采用独立的形体、装饰和肢体造型。",
+      "status": "web-prototype"
+    },
+    "pond.melancholy.E": {
+      "id": "pond.melancholy.E",
+      "path": "./assets/pond-frogs/melancholy/E.svg",
+      "use": "忧郁奶蛙 · 战斗动作 E",
+      "author": "回声练习场项目组",
+      "source": "为 T07 网页版独立绘制的池塘蛙形选手，采用青蓝长叶、低垂眼睑和交叉滑步。",
+      "license": "本项目原创网页版试玩素材。",
+      "realPersonCheck": "虚构蛙形选手，造型中无真人肖像或商标。",
+      "ipCheck": "本版采用独立的形体、装饰和肢体造型。",
+      "status": "web-prototype"
+    },
+    "pond.laughing.portrait": {
+      "id": "pond.laughing.portrait",
+      "path": "./assets/pond-frogs/laughing/portrait.svg",
+      "use": "大笑奶蛙 · 角色立绘",
+      "author": "回声练习场项目组",
+      "source": "为 T07 网页版独立绘制的池塘蛙形选手，采用草绿色弹性侧颊、宽笑口与高跃姿态。",
+      "license": "本项目原创网页版试玩素材。",
+      "realPersonCheck": "虚构蛙形选手，造型中无真人肖像或商标。",
+      "ipCheck": "本版采用独立的形体、装饰和肢体造型。",
+      "status": "web-prototype"
+    },
+    "pond.laughing.A": {
+      "id": "pond.laughing.A",
+      "path": "./assets/pond-frogs/laughing/A.svg",
+      "use": "大笑奶蛙 · 战斗动作 A",
+      "author": "回声练习场项目组",
+      "source": "为 T07 网页版独立绘制的池塘蛙形选手，采用草绿色弹性侧颊、宽笑口与高跃姿态。",
+      "license": "本项目原创网页版试玩素材。",
+      "realPersonCheck": "虚构蛙形选手，造型中无真人肖像或商标。",
+      "ipCheck": "本版采用独立的形体、装饰和肢体造型。",
+      "status": "web-prototype"
+    },
+    "pond.laughing.B": {
+      "id": "pond.laughing.B",
+      "path": "./assets/pond-frogs/laughing/B.svg",
+      "use": "大笑奶蛙 · 战斗动作 B",
+      "author": "回声练习场项目组",
+      "source": "为 T07 网页版独立绘制的池塘蛙形选手，采用草绿色弹性侧颊、宽笑口与高跃姿态。",
+      "license": "本项目原创网页版试玩素材。",
+      "realPersonCheck": "虚构蛙形选手，造型中无真人肖像或商标。",
+      "ipCheck": "本版采用独立的形体、装饰和肢体造型。",
+      "status": "web-prototype"
+    },
+    "pond.laughing.C": {
+      "id": "pond.laughing.C",
+      "path": "./assets/pond-frogs/laughing/C.svg",
+      "use": "大笑奶蛙 · 战斗动作 C",
+      "author": "回声练习场项目组",
+      "source": "为 T07 网页版独立绘制的池塘蛙形选手，采用草绿色弹性侧颊、宽笑口与高跃姿态。",
+      "license": "本项目原创网页版试玩素材。",
+      "realPersonCheck": "虚构蛙形选手，造型中无真人肖像或商标。",
+      "ipCheck": "本版采用独立的形体、装饰和肢体造型。",
+      "status": "web-prototype"
+    },
+    "pond.laughing.D": {
+      "id": "pond.laughing.D",
+      "path": "./assets/pond-frogs/laughing/D.svg",
+      "use": "大笑奶蛙 · 战斗动作 D",
+      "author": "回声练习场项目组",
+      "source": "为 T07 网页版独立绘制的池塘蛙形选手，采用草绿色弹性侧颊、宽笑口与高跃姿态。",
+      "license": "本项目原创网页版试玩素材。",
+      "realPersonCheck": "虚构蛙形选手，造型中无真人肖像或商标。",
+      "ipCheck": "本版采用独立的形体、装饰和肢体造型。",
+      "status": "web-prototype"
+    },
+    "pond.laughing.E": {
+      "id": "pond.laughing.E",
+      "path": "./assets/pond-frogs/laughing/E.svg",
+      "use": "大笑奶蛙 · 战斗动作 E",
+      "author": "回声练习场项目组",
+      "source": "为 T07 网页版独立绘制的池塘蛙形选手，采用草绿色弹性侧颊、宽笑口与高跃姿态。",
+      "license": "本项目原创网页版试玩素材。",
+      "realPersonCheck": "虚构蛙形选手，造型中无真人肖像或商标。",
+      "ipCheck": "本版采用独立的形体、装饰和肢体造型。",
+      "status": "web-prototype"
+    },
+    "pond.sacred.portrait": {
+      "id": "pond.sacred.portrait",
+      "path": "./assets/pond-frogs/sacred/portrait.svg",
+      "use": "神圣奶蛙 · 角色立绘",
+      "author": "回声练习场项目组",
+      "source": "为 T07 网页版独立绘制的池塘蛙形选手，采用薄荷色树蛙、莲瓣领、琥珀眼与悬浮池火。",
+      "license": "本项目原创网页版试玩素材。",
+      "realPersonCheck": "虚构蛙形选手，造型中无真人肖像或商标。",
+      "ipCheck": "本版采用独立的形体、装饰和肢体造型。",
+      "status": "web-prototype"
+    },
+    "pond.sacred.A": {
+      "id": "pond.sacred.A",
+      "path": "./assets/pond-frogs/sacred/A.svg",
+      "use": "神圣奶蛙 · 战斗动作 A",
+      "author": "回声练习场项目组",
+      "source": "为 T07 网页版独立绘制的池塘蛙形选手，采用薄荷色树蛙、莲瓣领、琥珀眼与悬浮池火。",
+      "license": "本项目原创网页版试玩素材。",
+      "realPersonCheck": "虚构蛙形选手，造型中无真人肖像或商标。",
+      "ipCheck": "本版采用独立的形体、装饰和肢体造型。",
+      "status": "web-prototype"
+    },
+    "pond.sacred.B": {
+      "id": "pond.sacred.B",
+      "path": "./assets/pond-frogs/sacred/B.svg",
+      "use": "神圣奶蛙 · 战斗动作 B",
+      "author": "回声练习场项目组",
+      "source": "为 T07 网页版独立绘制的池塘蛙形选手，采用薄荷色树蛙、莲瓣领、琥珀眼与悬浮池火。",
+      "license": "本项目原创网页版试玩素材。",
+      "realPersonCheck": "虚构蛙形选手，造型中无真人肖像或商标。",
+      "ipCheck": "本版采用独立的形体、装饰和肢体造型。",
+      "status": "web-prototype"
+    },
+    "pond.sacred.C": {
+      "id": "pond.sacred.C",
+      "path": "./assets/pond-frogs/sacred/C.svg",
+      "use": "神圣奶蛙 · 战斗动作 C",
+      "author": "回声练习场项目组",
+      "source": "为 T07 网页版独立绘制的池塘蛙形选手，采用薄荷色树蛙、莲瓣领、琥珀眼与悬浮池火。",
+      "license": "本项目原创网页版试玩素材。",
+      "realPersonCheck": "虚构蛙形选手，造型中无真人肖像或商标。",
+      "ipCheck": "本版采用独立的形体、装饰和肢体造型。",
+      "status": "web-prototype"
+    },
+    "pond.sacred.D": {
+      "id": "pond.sacred.D",
+      "path": "./assets/pond-frogs/sacred/D.svg",
+      "use": "神圣奶蛙 · 战斗动作 D",
+      "author": "回声练习场项目组",
+      "source": "为 T07 网页版独立绘制的池塘蛙形选手，采用薄荷色树蛙、莲瓣领、琥珀眼与悬浮池火。",
+      "license": "本项目原创网页版试玩素材。",
+      "realPersonCheck": "虚构蛙形选手，造型中无真人肖像或商标。",
+      "ipCheck": "本版采用独立的形体、装饰和肢体造型。",
+      "status": "web-prototype"
+    },
+    "pond.sacred.E": {
+      "id": "pond.sacred.E",
+      "path": "./assets/pond-frogs/sacred/E.svg",
+      "use": "神圣奶蛙 · 战斗动作 E",
+      "author": "回声练习场项目组",
+      "source": "为 T07 网页版独立绘制的池塘蛙形选手，采用薄荷色树蛙、莲瓣领、琥珀眼与悬浮池火。",
+      "license": "本项目原创网页版试玩素材。",
+      "realPersonCheck": "虚构蛙形选手，造型中无真人肖像或商标。",
+      "ipCheck": "本版采用独立的形体、装饰和肢体造型。",
+      "status": "web-prototype"
     }
   },
   "uiText": {
@@ -2243,7 +2246,7 @@
     }
   },
   "roleModule": {
-    "version": "T07-web.1",
+    "version": "T07-web.2",
     "name": "回声工坊六选手",
     "sourceCommit": "bcbd4d55e360224a78a99b38253e5b13e03378bf",
     "tuningNote": "全部数值为假设值。时长用逻辑帧，距离用 U，伤害系数乘以攻击力。",
@@ -2259,15 +2262,15 @@
   ],
   "animations": {
     "melancholy": {
-      "prototype": "echo.pendulum.portrait",
+      "prototype": "pond.melancholy.portrait",
       "sourceId": "melancholy",
-      "family": "pendulum",
+      "family": "melancholy",
       "sheets": {
-        "A": "echo.pendulum.A",
-        "B": "echo.pendulum.B",
-        "C": "echo.pendulum.C",
-        "D": "echo.pendulum.D",
-        "E": "echo.pendulum.E"
+        "A": "pond.melancholy.A",
+        "B": "pond.melancholy.B",
+        "C": "pond.melancholy.C",
+        "D": "pond.melancholy.D",
+        "E": "pond.melancholy.E"
       },
       "openingPoses": {
         "evade": {
@@ -2473,7 +2476,7 @@
             3
           ],
           "id": "basic1",
-          "label": "试拍点刺",
+          "label": "探步掌",
           "sheet": "C",
           "row": 0,
           "loop": false,
@@ -2494,7 +2497,7 @@
             3
           ],
           "id": "basic2",
-          "label": "反摆敲击",
+          "label": "回身拍",
           "sheet": "C",
           "row": 1,
           "loop": false,
@@ -2515,7 +2518,7 @@
             3
           ],
           "id": "basic3",
-          "label": "旋盘横扫",
+          "label": "旋步扫",
           "sheet": "C",
           "row": 2,
           "loop": false,
@@ -2607,7 +2610,7 @@
             3
           ],
           "id": "ult",
-          "label": "整点独舞",
+          "label": "雨幕独舞",
           "sheet": "D",
           "row": 2,
           "loop": false,
@@ -2661,15 +2664,15 @@
       ]
     },
     "laughing": {
-      "prototype": "echo.drum.portrait",
+      "prototype": "pond.laughing.portrait",
       "sourceId": "laughing",
-      "family": "drum",
+      "family": "laughing",
       "sheets": {
-        "A": "echo.drum.A",
-        "B": "echo.drum.B",
-        "C": "echo.drum.C",
-        "D": "echo.drum.D",
-        "E": "echo.drum.E"
+        "A": "pond.laughing.A",
+        "B": "pond.laughing.B",
+        "C": "pond.laughing.C",
+        "D": "pond.laughing.D",
+        "E": "pond.laughing.E"
       },
       "openingPoses": {
         "evade": {
@@ -2875,7 +2878,7 @@
             3
           ],
           "id": "basic1",
-          "label": "鼓边轻点",
+          "label": "探掌",
           "sheet": "C",
           "row": 0,
           "loop": false,
@@ -2896,7 +2899,7 @@
             3
           ],
           "id": "basic2",
-          "label": "反拍双击",
+          "label": "反拍",
           "sheet": "C",
           "row": 1,
           "loop": false,
@@ -2917,7 +2920,7 @@
             3
           ],
           "id": "basic3",
-          "label": "绷面回弹",
+          "label": "弹腹",
           "sheet": "C",
           "row": 2,
           "loop": false,
@@ -2957,7 +2960,7 @@
             3
           ],
           "id": "skill1",
-          "label": "鼓腹震波",
+          "label": "捧腹震波",
           "sheet": "D",
           "row": 0,
           "loop": false,
@@ -2983,7 +2986,7 @@
             3
           ],
           "id": "skill2",
-          "label": "弹簧跳击",
+          "label": "弹簧蹦跶",
           "sheet": "D",
           "row": 1,
           "loop": false,
@@ -3009,7 +3012,7 @@
             3
           ],
           "id": "ult",
-          "label": "满场齐鸣",
+          "label": "笑到震场",
           "sheet": "D",
           "row": 2,
           "loop": false,
@@ -3063,15 +3066,15 @@
       ]
     },
     "sacred": {
-      "prototype": "echo.prism.portrait",
+      "prototype": "pond.sacred.portrait",
       "sourceId": "sacred",
-      "family": "prism",
+      "family": "sacred",
       "sheets": {
-        "A": "echo.prism.A",
-        "B": "echo.prism.B",
-        "C": "echo.prism.C",
-        "D": "echo.prism.D",
-        "E": "echo.prism.E"
+        "A": "pond.sacred.A",
+        "B": "pond.sacred.B",
+        "C": "pond.sacred.C",
+        "D": "pond.sacred.D",
+        "E": "pond.sacred.E"
       },
       "openingPoses": {
         "evade": {
@@ -3277,7 +3280,7 @@
             3
           ],
           "id": "basic1",
-          "label": "点灯推击",
+          "label": "轻推",
           "sheet": "C",
           "row": 0,
           "loop": false,
@@ -3298,7 +3301,7 @@
             3
           ],
           "id": "basic2",
-          "label": "双棱合击",
+          "label": "合掌",
           "sheet": "C",
           "row": 1,
           "loop": false,
@@ -3319,7 +3322,7 @@
             3
           ],
           "id": "basic3",
-          "label": "棱面外展",
+          "label": "展开推击",
           "sheet": "C",
           "row": 2,
           "loop": false,

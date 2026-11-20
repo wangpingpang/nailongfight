@@ -1,4 +1,5 @@
 import {buildFighterAnimation} from './fighter-animation.mjs'
+import {applyLocalFrogArt} from './local-frog-art.mjs'
 
 const actions = ['up', 'down', 'left', 'right', 'basic', 's1', 's2', 'defend', 'ult']
 export const FLOOR_WIDTH_FRACTION = .91
@@ -497,7 +498,7 @@ export async function loadConfig(fetcher = globalThis.fetch, page = globalThis.d
     return response.json()
   }
   const base = await fetchTable('game.json')
-  if (!base.fighterModule) return validateConfig(base)
+  if (!base.fighterModule) return applyLocalFrogArt(validateConfig(base))
   requireField(typeof base.fighterModule === 'string' && /^[A-Za-z0-9-]+\.json$/.test(base.fighterModule),
     'fighterModule', '需要 data 目录内的模块名')
   const fighters = await fetchTable(base.fighterModule)

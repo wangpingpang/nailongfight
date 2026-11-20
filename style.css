@@ -243,3 +243,18 @@ canvas { width:100%; aspect-ratio: 2.45; height:auto; display:block; }
   0% {background-position:0% 0} 25% {background-position:33.33333% 0}
   56.6667% {background-position:66.66667% 0} 84.1667%,100% {background-position:100% 0}
 }
+
+.room-panel {max-width: 920px; margin: 0 auto; display: grid; gap: 16px; justify-items: start}
+.room-panel .actions {margin:0}
+.room-panel .room-status {margin:0; color:var(--mint,#95edd1)}
+.room-form {display:flex;flex-wrap:wrap;align-items:center;gap:12px;border-top:1px solid #45605c;padding-top:16px;width:100%}
+.room-code,.room-url,.room-scene select {font:inherit;color:inherit;background:var(--deep,#132223);border:1px solid #718982;border-radius:6px;padding:.6em .8em}
+.room-code {max-width:13em;text-transform:uppercase;letter-spacing:.15em}
+.room-url {width:100%}
+.room-number {font:700 1.5rem/1 monospace;letter-spacing:.13em}
+.room-roster {width:100%;grid-template-columns:repeat(auto-fit,minmax(145px,1fr))}
+.room-roster .fighter {min-width:0}
+.room-versus,.room-panel h2 {margin:0}
+.room-scene {display:flex;align-items:center;gap:12px}
+@media (min-width:561px) and (max-width:959px) {.modes {grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (min-width:960px) {.modes {grid-template-columns:repeat(4,minmax(0,1fr))}}

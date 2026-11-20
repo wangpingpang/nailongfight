@@ -1,4 +1,6 @@
+import {roomPanel} from './room-lobby.mjs';
 import {courierLine, doorSheetId} from './performance-score.mjs';
+import {frogLookSettings} from './local-frog-art.mjs';
 import {performanceCaption} from './scene-performance.mjs';
 import {fighterStatus} from './fighter-status.mjs';
 import {canonicalKeyCode, validateBindings} from './config.mjs';
@@ -70,7 +72,7 @@ function write(el, value) { const text=String(value); if (el.textContent!==text)
 export function createUI(root, callbacks) {
   let config, profile, notice='', screen='home', overlay='', bindingsCapture=null, draft=null;
   let selected='shell', characterOrigin='home', stageId='stage_01', mode='vs_ai', picks=[], ready=[];
-  let duelScene;
+  let duelScene, roomHint='', roomState=null;
   const stageScenes = new Map();
   let currentBattle=null, receipt=null, hud=null, busy=false, initialized=false, restoreFocus=null;
   const playable = () => config.roster ? config.roster.map(id=>config.characters[id]) : Object.values(config.characters).filter(c=>c.playable);
@@ -126,7 +128,9 @@ export function createUI(root, callbacks) {
       if(key===screen) el.setAttribute('aria-current','page'); else el.removeAttribute('aria-current');
     }
     const playing=screen==='battle';
-    brand.disabled=playing; Object.values(navItems).forEach(btn=>{btn.disabled=playing;});
+    const inRoom=screen==='online'||(screen==='result'&&currentBattle?.onlineRole);
+    brand.disabled=playing||inRoom; Object.values(navItems).forEach(btn=>{btn.disabled=playing||inRoom;});
+    gear.disabled=inRoom||!!(playing&&currentBattle?.onlineRole);
     main.className=playing?'arena-main':'';
     footer.hidden=playing;
     write(pointValue,profile.points);
@@ -160,7 +164,16 @@ export function createUI(root, callbacks) {
       node('div','section-head',node('h2',null,copy.modeHeading),node('span',null,'TRAINING MODES')),
       node('div','modes',modeCard('stages',copy.pve,copy.pveDescription,()=>go('stages')),
         modeCard('duo',copy.pvp,copy.pvpDescription,()=>openSelect('pvp')),
+        modeCard('duo','在线双人','创建房间，邀请另一台电脑上的好友对战。',()=>call('onOnline')),
         modeCard('target',copy.training,copy.trainingDescription,()=>openSelect('training')))));
+  }
+  function openOnline(code='') {roomHint=code;go('online');}
+  function updateOnline(state) {roomState=state;if(screen==='online')paintOnline();}
+  function paintOnline() {
+    if(!roomState)return;
+    const previous=main.querySelector('#duel-code')?.value;
+    if(previous!==undefined)roomHint=previous;
+    main.replaceChildren(back(()=>call('onRoomExit')),title('ONLINE VERSUS','在线双人','房主与好友各用自己的键盘，双方均使用玩家 1 键位。'),roomPanel(config,roomState,roomHint,call));
   }
   function openCharacters(origin) {
     characterOrigin=origin; selected=defaultHero(); go('characters');
@@ -356,13 +369,14 @@ export function createUI(root, callbacks) {
     caption.setAttribute('role','status');
     const field=node('div','arena-wrap',canvas);
     const p1=battle.actors.find(a=>a.team===1),p2=battle.actors.find(a=>a.team===2);
-    const strips=[actionStrip(p1,'p1')];
-    if(battle.mode==='pvp'&&p2)strips.push(actionStrip(p2,'p2'));
+    const strips=battle.onlineRole?[actionStrip(battle.onlineRole==='guest'?p2:p1,'p1')]:[actionStrip(p1,'p1')];
+    if(battle.onlineRole)write(strips[0].el.firstElementChild,battle.onlineRole==='guest'?'你 · P2':'你 · P1');
+    if(battle.mode==='pvp'&&p2&&!battle.onlineRole)strips.push(actionStrip(p2,'p2'));
     const stageName=battle.stage?config.stages[battle.stage.id].name:null;
-    const bar=node('div','battle-bar',node('div','battle-heading',node('h1',null,stageName || config.uiText[battle.mode]),stageName===scene.name?null:tag(scene.name)),
+    const bar=node('div','battle-bar',node('div','battle-heading',node('h1',null,stageName || (battle.onlineRole?'在线双人':config.uiText[battle.mode])),stageName===scene.name?null:tag(scene.name)),
       node('div','actions', battle.mode==='training' && p1?.characterId==='courier' ?
         button('minor','重播指路动作',()=>call('onTrainingReplay')) : null,
-        button('tool',[icon('pause'),'暂停'],()=>call('onPause'))));
+        battle.onlineRole?button('tool','退出房间',()=>call('onExit')):button('tool',[icon('pause'),'暂停'],()=>call('onPause'))));
     main.replaceChildren(bar,node('section','battle-shell',node('div','hud-top',left.el,node('div','clock',clock,clockLabel),right.el),
       field,caption,node('div','hud-bottom',strips.map(s=>s.el))),hint);
     hud={canvas,caption,left,right,clock,clockLabel,hint,strips,battleId:battle.id,lastNotice:'',until:0};
@@ -453,7 +467,7 @@ export function createUI(root, callbacks) {
     else if(battle.mode==='training')hint='训练假人保持静止。按 Esc 暂停并返回大厅。';
     if(left?.comboHits>=2)hint='受到 '+left.comboHits+' 连击';
     if(right?.comboHits>=2)hint='命中 '+right.comboHits+' 连击';
-    write(hud.hint,hint);
+    write(hud.hint,battle.connectionHint||hint);
     write(hud.caption,performanceCaption(battle));
   }
   function showPause() {
@@ -526,7 +540,7 @@ export function createUI(root, callbacks) {
     const saveRetry=receipt?.notice?button('primary','重试保存',()=>call('onRetrySave')):null;
     main.replaceChildren(node('section','result-panel',node('span','kicker','MATCH RESULT'),node('h1',null,titleText),
       poses.length ? node('div','outcome-poses',...poses) : null,lines,
-      node('div','actions',saveRetry,next,button(next||saveRetry?'minor':'primary','再来一局',()=>call('onRetry')),
+      node('div','actions',saveRetry,next,b.onlineRole?null:button(next||saveRetry?'minor':'primary','再来一局',()=>call('onRetry')),
         stage?button('minor','角色养成',()=>openCharacters('result')):null,
         stage?button('quiet','返回关卡',()=>go('stages')):null,button('quiet','返回大厅',()=>call('onExit')))));
   }
@@ -570,6 +584,7 @@ export function createUI(root, callbacks) {
       catch(e){if(draft)paintSettings(e.message);}
     });
     modal('settings','操作设置',volumeSlider('总音量','volume'),volumeSlider('场景音乐','musicVolume'),node('label','setting-row','减少画面动态效果',effects),
+      ...(screen === 'home' ? [frogLookSettings(config)] : []),
       node('h3',null,'键盘映射'),muted('点击动作对应的键位，再按新键。数字 1–6 支持主键盘与小键盘。O 和 6 默认预留，可改绑。Esc 暂停。'),map,
       ...(error?[node('p','errorline',error)]:[]),node('div','actions',save,button('quiet','取消',closeSettings),
         button('quiet','恢复默认键位',()=>{draft.bindings=structuredClone(config.input);bindingsCapture=null;paintSettings('');})));
@@ -616,7 +631,7 @@ export function createUI(root, callbacks) {
     stopPreview();
     reflect();
     switch(screen) {
-      case 'home':paintHome();break;case 'stages':paintStages();break;
+      case 'home':paintHome();break;case 'online':paintOnline();break;case 'stages':paintStages();break;
       case 'characters':paintCharacters();break;case 'select':paintSelect();break;
       case 'result':paintResult();break;
     }
@@ -627,6 +642,6 @@ export function createUI(root, callbacks) {
     if(first){selected=defaultHero();stageId=config.economy.initialStage;}
     if(screen==='battle')reflect();else paint();
   }
-  return {home,setData,renderBattle,showResult,showPause,showCountdown,showError,
+  return {home,openLocal:()=>openSelect('pvp'),openOnline,updateOnline,setData,renderBattle,showResult,showPause,showCountdown,showError,
     get canvas(){return hud?.canvas || null;},get screen(){return screen;},get isOverlayOpen(){return !!overlay;}};
 }

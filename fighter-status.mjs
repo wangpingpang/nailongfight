@@ -30,7 +30,7 @@ export function fighterStatus(battle, actor) {
     case 'mirth':
       active = !!actor.cast?.mirth || actor.mirthUntil > battle.frame
       text = actor.cast?.mirth ? '本次震波已强化' : active ?
-        '余振 '+seconds(actor.mirthUntil-battle.frame)+' 秒 · 震波可强化' : '跃进命中可获得余振'
+        '笑意 '+seconds(actor.mirthUntil-battle.frame)+' 秒 · 震波可强化' : '跃进命中可获得笑意'
       break
     case 'resonance': {
       const field = ownedEffect(battle,actor,'field')

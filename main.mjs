@@ -1,3 +1,4 @@
+import {createOnlineRoom, applyRoomFrame, roomCode, validRoomCode} from './online-room.mjs';
 import {loadConfig, validateBindings, resolveScene} from './config.mjs';
 import {createInput, createClock} from './controls.mjs';
 import {createBattle, stepBattle} from './combat.mjs';
@@ -19,8 +20,17 @@ const audio = createImpactAudio();
 let holdRemaining = 0;
 let pauseAfterLoading = false;
 let settings = {};
+let online, roomMotion=null;
 const ui = createUI(root, {
   onStart: startMatch,
+  onOnline: () => openRoom(),
+  onRoomCreate: () => online.connect(''),
+  onRoomJoin: code => online.connect(code),
+  onRoomSelect: id => online.select(id),
+  onRoomScene: id => online.selectScene(id),
+  onRoomReady: () => online.ready(),
+  onRoomStart: () => online.start(),
+  onRoomExit: () => exitMatch(),
   onDoorPreview: () => audio.previewDoor(),
   onStopPreview: () => audio.stopPerformance(),
   onTrainingReplay: () => phase === 'playing' && replayTrainingLine(battle),
@@ -104,7 +114,9 @@ async function startMatch(request) {
     void audio.preparePerformance?.(scene.id, matchFighters);
     await audio.prepare(config.fighterAudio, matchFighters);
     if (serial !== generation) return;
-    battle = createBattle(config, {id:matchId(), mode, actors});
+    battle = createBattle(config, {id:request.networkMatch || matchId(), mode, actors});
+    if(request.onlineRole)battle.onlineRole=request.onlineRole;
+    roomMotion=null;
     holdRemaining = 0;
     Object.defineProperty(battle, 'sceneId', {value:scene.id, enumerable:true});
     choice = {...request, sceneId:scene.id};
@@ -116,7 +128,8 @@ async function startMatch(request) {
     ui.renderBattle(battle);
     drawArena(ui.canvas, battle, settings);
     audio.music.start(config.sceneMusic?.tracks[scene.id]);
-    if (pauseAfterLoading || document.hidden || document.hasFocus?.() === false) pause();
+    if (!request.onlineRole && (pauseAfterLoading || document.hidden || document.hasFocus?.() === false)) pause();
+    return true;
   } catch (err) {
     if (serial !== generation) return;
     phase = previousPhase;
@@ -124,12 +137,21 @@ async function startMatch(request) {
       if (pauseAfterLoading || document.hidden || document.hasFocus?.() === false) pause();
       else input?.setActive(true);
     }
-    ui.showError(err.message || '载入战斗失败');
+    if(!request.onlineRole)ui.showError(err.message || '载入战斗失败');
+    return false;
   }
 }
 
 function tick() {
   if (phase !== 'playing') return;
+  if(battle.onlineRole) {
+    if(!online.loaded) return;
+    if(battle.onlineRole==='guest') {
+      online.localIntent(input.read('p1'));
+      animatePeerPosition();
+      return;
+    }
+  }
   // Keep input edges queued until the first live frame. Timers, AI and damage
   // advance together; only presentation ages while the two fighters hold their poses.
   if (holdRemaining > 0) {
@@ -139,7 +161,7 @@ function tick() {
     return;
   }
   const intents = {p1:input.read('p1')};
-  if (battle.mode === 'pvp') intents.p2 = input.read('p2');
+  if (battle.mode === 'pvp') intents.p2 = battle.onlineRole ? online.peerIntent() : input.read('p2');
   else if (battle.mode !== 'training') {
     for (const actor of battle.actors) {
       if (actor.team === 1 || actor.hp <= 0) continue;
@@ -148,6 +170,7 @@ function tick() {
     }
   }
   stepBattle(battle, intents);
+  if(battle.onlineRole==='host')online.track(battle);
   recordBattleFeedback(battle);
   if (battle.mode === 'pve') tickStage(battle);
   audio.play(battle, settings.volume ?? 0.65);
@@ -184,6 +207,12 @@ async function settle() {
 }
 
 function pause() {
+  if(online?.role) {
+    input?.clear();
+    if(online.role==='guest') online.localIntent({});
+    clock?.reset();
+    return;
+  }
   audio.music.pause();
   audio.reset();
   if (phase === 'loading') {
@@ -211,6 +240,13 @@ function resume() {
 }
 
 function exitMatch() {
+  const url=new URL(location.href);
+  if(url.searchParams.has('room')||url.searchParams.has('mode')) {
+    url.searchParams.delete('room');url.searchParams.delete('mode');
+    history.replaceState(history.state,'',url);
+  }
+  online?.discard();
+  roomMotion=null;
   generation++;
   phase = 'menu';
   audio.music.stop();
@@ -224,6 +260,39 @@ function exitMatch() {
   ui.home();
 }
 
+function openRoom(code='') {
+  const normalized=roomCode(code);
+  online.resetView();
+  ui.openOnline(normalized);
+  if(validRoomCode(normalized)) void online.connect(normalized);
+}
+
+function animatePeerPosition() {
+  if(!roomMotion || !battle) return;
+  const t=Math.min(1,(performance.now()-roomMotion.start)/roomMotion.duration);
+  for(let i=0;i<battle.actors.length;i++) {
+    const fighter=battle.actors[i], pos=roomMotion.positions[i];
+    fighter.x=pos.x0+(pos.x1-pos.x0)*t;
+    fighter.y=pos.y0+(pos.y1-pos.y0)*t;
+  }
+  if(t===1)roomMotion=null;
+}
+function receivePeerFrame(snap) {
+  if(battle?.onlineRole!=='guest'||phase!=='playing' || !snap || snap.frame < battle.frame)return;
+  const previous=battle.frame;
+  const origins=battle.actors.map(a=>({x:a.x,y:a.y}));
+  applyRoomFrame(battle,snap,()=>{
+    recordBattleFeedback(battle);
+    audio.play(battle,settings.volume??.65);
+  });
+  if(battle.result){roomMotion=null;void settle();return;}
+  if(snap.frame===previous)return;
+  const duration=Math.min(110,Math.max(25,(battle.frame-previous)*1000/config.rules.tickRate));
+  roomMotion={start:performance.now(),duration,positions:battle.actors.map((a,i)=>({
+    x0:origins[i].x,y0:origins[i].y,x1:a.x,y1:a.y
+  }))};
+  animatePeerPosition();
+}
 function redraw(now) {
   if (phase === 'countdown') {
     const left = Math.ceil((resumeAt - now) / 1000);
@@ -237,6 +306,7 @@ function redraw(now) {
     }
   }
   if (phase === 'playing') {
+    if(battle.onlineRole && document.hidden)clock.reset();
     const ticks = clock.advance(now);
     if (phase === 'playing' && ticks > 0) {
       // Read the canvas dimensions before writing this tick's HUD changes.
@@ -247,6 +317,7 @@ function redraw(now) {
   requestAnimationFrame(redraw);
 }
 
+window.addEventListener('pagehide',()=>online?.beforeUnload());
 window.addEventListener('blur', pause);
 document.addEventListener('visibilitychange', () => { if (document.hidden) pause(); });
 window.addEventListener('keydown', e => {
@@ -263,8 +334,21 @@ try {
   config = await loadConfig();
   store = createProgressStore(config);
   input = createInput(config.input);
+  online=createOnlineRoom({
+    origin:document.querySelector('meta[name="room-api-origin"]')?.content || location.origin,
+    config:()=>config,view:state=>ui.updateOnline(state),begin:startMatch,receive:receivePeerFrame,
+    connection:text=>{if(battle?.onlineRole)battle.connectionHint=text;},
+    end:reason=>{
+      if(phase==='result')return;
+      exitMatch();ui.showError(reason);
+    }
+  });
   applyProfile(store.read());
   ui.home();
+  const query=new URL(location.href).searchParams;
+  if(query.get('room'))openRoom(query.get('room'));
+  else if(query.get('mode')==='online')openRoom();
+  else if(query.get('mode')==='local')ui.openLocal();
   requestAnimationFrame(redraw);
 } catch (err) {
   ui.showError('无法启动练习场。' + (err.message || '请检查游戏配置后重新打开'));
