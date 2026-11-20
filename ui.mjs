@@ -359,12 +359,15 @@ export function createUI(root, callbacks) {
     el.append(trait);
     return {slot,actorId:actor.id,el,data,trait};
   }
+  function battleModeName(battle) {
+    return battle.onlineRole ? '在线双人' : config.uiText[battle.mode];
+  }
   function createHud(battle) {
     screen='battle'; currentBattle=battle; releaseOverlay(); reflect();
     const left=vital(false),right=vital(true),clock=node('b'),clockLabel=node('small'),hint=node('div','battle-hint');
     const canvas=node('canvas'); canvas.width=1220; canvas.height=498;
     const scene=battle.config.scenes[battle.sceneId ?? battle.config.defaultScene];
-    canvas.setAttribute('aria-label',scene.name+'，'+config.uiText[battle.mode]+'战斗场地，使用键盘操作');
+    canvas.setAttribute('aria-label',scene.name+'，'+battleModeName(battle)+'战斗场地，使用键盘操作');
     const caption=node('div','performance-caption');
     caption.setAttribute('role','status');
     const field=node('div','arena-wrap',canvas);
@@ -373,7 +376,7 @@ export function createUI(root, callbacks) {
     if(battle.onlineRole)write(strips[0].el.firstElementChild,battle.onlineRole==='guest'?'你 · P2':'你 · P1');
     if(battle.mode==='pvp'&&p2&&!battle.onlineRole)strips.push(actionStrip(p2,'p2'));
     const stageName=battle.stage?config.stages[battle.stage.id].name:null;
-    const bar=node('div','battle-bar',node('div','battle-heading',node('h1',null,stageName || (battle.onlineRole?'在线双人':config.uiText[battle.mode])),stageName===scene.name?null:tag(scene.name)),
+    const bar=node('div','battle-bar',node('div','battle-heading',node('h1',null,stageName || battleModeName(battle)),stageName===scene.name?null:tag(scene.name)),
       node('div','actions', battle.mode==='training' && p1?.characterId==='courier' ?
         button('minor','重播指路动作',()=>call('onTrainingReplay')) : null,
         battle.onlineRole?button('tool','退出房间',()=>call('onExit')):button('tool',[icon('pause'),'暂停'],()=>call('onPause'))));
@@ -519,7 +522,7 @@ export function createUI(root, callbacks) {
     const win=b.result.winner===1,tie=b.result.winner===null,stage=b.stage?config.stages[b.stage.id]:null;
     const titleText=tie?'平局':b.mode==='pvp'?'玩家 '+b.result.winner+' 获胜':win?(stage?'挑战完成':'对战胜利'):(stage?'挑战结束':'对战结束');
     const reason={timeout:'时间到',ko:'击倒',clear:'关卡完成',stage_clear:'关卡完成',defeat:'己方倒下',double_ko:'同时倒下'}[b.result.reason] || '';
-    const lines=node('div','result-lines',statLine('模式',stage?stage.name:config.uiText[b.mode]),statLine('用时',stamp(Math.floor(b.frame/b.config.rules.tickRate))));
+    const lines=node('div','result-lines',statLine('模式',stage?stage.name:battleModeName(b)),statLine('用时',stamp(Math.floor(b.frame/b.config.rules.tickRate))));
     if(reason)lines.append(statLine('结束条件',reason));
     if(b.mode!=='pvp' && !tie)lines.append(statLine('胜方',win?'玩家':b.mode==='vs_ai'?'电脑':'对手'));
     if(receipt?.notice) lines.append(node('p','notice',receipt.notice));
