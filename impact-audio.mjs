@@ -1,4 +1,6 @@
-import {createFighterSampler} from './fighter-audio.mjs'
+import {createSceneMusic} from './scene-music.mjs'
+import {createStageAudio} from './stage-audio.mjs'
+import {createFighterSampler, readAudioBytes} from './fighter-audio.mjs'
 
 // Original synthesized cues. Frequencies are in Hz; envelopes and offsets are in seconds.
 const tone = (wave, from, to, duration, peak, offset = 0) => ({wave,from,to,duration,peak,offset})
@@ -56,9 +58,10 @@ export function createImpactAudio(makeContext = () => {
   const Audio = globalThis.AudioContext || globalThis.webkitAudioContext
   return Audio ? new Audio() : null
 }) {
-  let context, master, noise, fighters
+  let context, master, noise, fighters, stagePlayer
   let volume = .65, lastTime = -Infinity, lastPriority = -1, lastBattle, lastFrame
   const voices = new Set()
+  const music = createSceneMusic(() => context)
 
   function activate() {
     try {
@@ -73,6 +76,7 @@ export function createImpactAudio(makeContext = () => {
         master = gain
         noise = buffer
         fighters = createFighterSampler(context, master)
+        stagePlayer = createStageAudio(context, master, readAudioBytes, music.setSpeaking)
       }
       if (context.state !== 'running') context.resume()?.catch(() => {})
     } catch { /* Audio availability never gates game startup. */ }
@@ -90,6 +94,7 @@ export function createImpactAudio(makeContext = () => {
 
   function reset() {
     fighters?.reset()
+    stagePlayer?.reset()
     for (const voice of voices) silence(voice)
     lastTime = -Infinity
     lastPriority = -1
@@ -152,6 +157,7 @@ export function createImpactAudio(makeContext = () => {
     lastBattle = battle
     lastFrame = battle.frame
 
+    stagePlayer?.play(battle)
     const personalContact = fighters?.play(battle)
     let cue = null
     for (const event of battle.events) {
@@ -180,5 +186,9 @@ export function createImpactAudio(makeContext = () => {
     if (volume && context?.state === 'running') fighters?.victory(battle)
   }
 
-  return {activate,play,setVolume,reset,victory,prepare:(options, ids) => fighters?.prepare(options, ids)}
+  return {music,activate,play,setVolume,reset,victory,
+    preparePerformance:(scene, ids) => stagePlayer?.prepare(scene, ids),
+    previewDoor:() => { if (volume>0) { activate(); void stagePlayer?.preview(); } },
+    stopPerformance:() => stagePlayer?.reset(),
+    prepare:(options, ids) => fighters?.prepare(options, ids)}
 }

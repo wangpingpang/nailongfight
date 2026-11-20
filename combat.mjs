@@ -26,6 +26,27 @@ function move(b, a, vector, distance) {
   place(b, a, a.x + vector.x * distance, a.y + vector.y * distance)
 }
 
+function duelSpan(b) {
+  if (b.actors.length !== 2 || !['pvp','vs_ai','training'].includes(b.mode)) return null
+  return b.config.camera?.maxSeparation ?? null
+}
+
+// Resolve both displacements together. Only movement away from the other
+// fighter pays for excess distance; a stationary target keeps its footing.
+function limitSeparation(actors, firstStart, secondStart, span) {
+  const [first, second] = actors
+  const direction = Math.sign(second.x - first.x)
+  const excess = (second.x - first.x) * direction - span
+  if (excess <= 0) return false
+  const firstOut = Math.max(0, (firstStart - first.x) * direction)
+  const secondOut = Math.max(0, (second.x - secondStart) * direction)
+  const totalOut = firstOut + secondOut
+  const firstCorrection = totalOut ? excess * firstOut / totalOut : excess / 2
+  first.x += direction * firstCorrection
+  second.x -= direction * (excess - firstCorrection)
+  return true
+}
+
 function enter(a, state, duration = Infinity) {
   a.state = state
   a.age = 0
@@ -47,6 +68,8 @@ export function createBattle(config, { id = globalThis.crypto.randomUUID(), mode
     performance: createPerformance(), telegraphs: [], events: [], result: null, nextCast: 1,
   }
   for (const spec of actors) addActor(b, spec)
+  const span = duelSpan(b)
+  if (span !== null) limitSeparation(b.actors, b.actors[0].x, b.actors[1].x, span)
   return b
 }
 
@@ -195,6 +218,21 @@ function moveFighter(b, a, input) {
   }
   const cast = a.cast
   const e = cast?.skill.effect
+  // Resolve cast movement alongside normal travel, before building hit shapes.
+  if (e) {
+    const activeAge = a.age - cast.skill.startup
+    if (e.type === 'leap' || (e.type === 'slide' && cast.slideStoppedAt === null)) {
+      const travelFrames = e.type === 'leap' ? e.moveFrames : e.slideFrames
+      const travelAge = e.type === 'leap' ? activeAge + travelFrames : activeAge
+      if (travelAge >= 0 && travelAge < travelFrames) {
+        const t = (travelAge + 1) / travelFrames
+        place(b, a, cast.originX + (cast.targetX - cast.originX) * t, cast.originY + (cast.targetY - cast.originY) * t)
+      }
+    }
+    if ((e.type === 'dash' || e.type === 'backstep') && activeAge >= 0 && activeAge < cast.skill.active) {
+      move(b, a, {x:e.type === 'dash' ? cast.facing : -cast.facing, y:0}, e.distance / cast.skill.active)
+    }
+  }
   const charging = e?.type === 'charge' && a.age >= cast.skill.startup && cast.releaseAge === null
   if (!free(a) && a.state !== 'GETUP' && !charging) return
   const vector = direction(input.x || 0, input.y || 0)
@@ -234,7 +272,7 @@ function projectileParams(b, a) {
   }
 }
 
-function updateAttack(b, a, input, attacks) {
+function updateAttack(b, a, input, attacks, span) {
   const c = a.cast
   if (!c) return
   const s = c.skill, e = s.effect
@@ -244,7 +282,14 @@ function updateAttack(b, a, input, attacks) {
   if (a.age === s.startup && ['field','marker','feed','backstep'].includes(e.type)) {
     b.events.push({type:'activate', sourceId:a.id, actionId:s.id})
   }
-  const module = moduleAction(b, a, input, p, move)
+  let landingX = c.targetX
+  if (span !== null && (e.type === 'leap' || e.type === 'slide')) {
+    const opponent = b.actors[0] === a ? b.actors[1] : b.actors[0]
+    landingX = clamp(c.targetX, opponent.x - span, opponent.x + span)
+    // Freeze the reachable landing on the last jump tick, before its hitbox opens.
+    if (e.type === 'leap' && a.age === s.startup - 1) c.targetX = landingX
+  }
+  const module = moduleAction(b, a, input, p, landingX)
   if (module) {
     if (module.shape && module.phase !== 'recovery') {
       display(b, a, module.shape, module.phase)
@@ -284,13 +329,8 @@ function updateAttack(b, a, input, attacks) {
   }
   let shape
   if (e.type === 'leap') {
-    if (p === 'warning' && a.age >= s.startup - e.moveFrames) {
-      const t = (a.age - s.startup + e.moveFrames + 1) / e.moveFrames
-      place(b, a, c.originX + (c.targetX - c.originX) * t, c.originY + (c.targetY - c.originY) * t)
-    }
-    shape = circle(c.targetX, c.targetY, e.radius)
+    shape = circle(p === 'warning' ? landingX : c.targetX, c.targetY, e.radius)
   } else {
-    if (e.type === 'dash' && p === 'active') move(b, a, { x: c.facing, y: 0 }, e.distance / s.active)
     const length = e.type === 'dash' && p === 'warning' ? e.length + e.distance : e.length
     shape = rect(a.x, a.y, c.facing, length, e.depth)
   }
@@ -495,11 +535,14 @@ export function stepBattle(b, intents = {}) {
     applyInput(b, a, intents[a.id] ?? {})
   }
   placeModuleZones(b)
+  const span = duelSpan(b)
+  const firstStart = b.actors[0]?.x, secondStart = b.actors[1]?.x
   for (const a of b.actors) {
-    if (a.state === 'DEAD') continue
-    const input = intents[a.id] ?? {}
-    moveFighter(b, a, input)
-    updateAttack(b, a, input, attacks)
+    if (a.state !== 'DEAD') moveFighter(b, a, intents[a.id] ?? {})
+  }
+  if (span !== null) limitSeparation(b.actors, firstStart, secondStart, span)
+  for (const a of b.actors) {
+    if (a.state !== 'DEAD') updateAttack(b, a, intents[a.id] ?? {}, attacks, span)
   }
   updateEntities(b, attacks)
   const impacts = impactsSnapshot(b, attacks)
@@ -508,9 +551,15 @@ export function stepBattle(b, intents = {}) {
     if (a.state === 'HIT') a.lockFrames++
     else if (a.comboHits && ++a.freeFrames >= b.config.rules.comboResetFree) resetCombo(a)
   }
+  const beforePush1 = b.actors[0]?.x, beforePush2 = b.actors[1]?.x
   for (const impact of impacts) settleImpact(b, impact)
   for (const a of b.actors) {
     if (a.state === 'HIT' && a.lockFrames >= b.config.rules.comboLockLimit) knockDown(b, a)
+  }
+  if (span !== null && limitSeparation(b.actors, beforePush1, beforePush2, span)) {
+    for (const event of b.events) {
+      if (event.type === 'down') event.x = b.actors.find(a => a.id === event.targetId).x
+    }
   }
   b.entities = b.entities.filter(e => !e.spent && b.actors.some(a => a.id === e.ownerId && a.hp > 0))
   updatePerformance(b, attacks)

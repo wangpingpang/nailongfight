@@ -4,8 +4,9 @@ import {createBattle, stepBattle} from './combat.mjs';
 import {makeAI, startStage, tickStage} from './stages.mjs';
 import {createProgressStore} from './progress.mjs';
 import {createUI} from './ui.mjs';
-import {drawArena, recordBattleFeedback} from './art.mjs';
+import {drawArena, recordBattleFeedback, warmMatchArt} from './art.mjs';
 import {createImpactAudio} from './impact-audio.mjs';
+import {replayTrainingLine} from './scene-performance.mjs';
 import {impactHoldFrames} from './impact-timing.mjs';
 
 const root = document.getElementById('app');
@@ -16,9 +17,13 @@ let controllers = new Map();
 let resumeAt = 0;
 const audio = createImpactAudio();
 let holdRemaining = 0;
+let pauseAfterLoading = false;
 let settings = {};
 const ui = createUI(root, {
   onStart: startMatch,
+  onDoorPreview: () => audio.previewDoor(),
+  onStopPreview: () => audio.stopPerformance(),
+  onTrainingReplay: () => phase === 'playing' && replayTrainingLine(battle),
   onUpgrade: async id => applyProfile(await store.upgrade(id, profile.levels[id])),
   onSettings: async next => {
     validateBindings(next.bindings ?? config.input);
@@ -42,6 +47,7 @@ function applyProfile(outcome) {
   profile = outcome.profile;
   settings = {...profile.settings};
   audio.setVolume(settings.volume ?? 0.65);
+  audio.music.setVolume((settings.volume ?? 0.65) * (settings.musicVolume ?? config.sceneMusic?.defaultVolume ?? 0));
   try {
     validateBindings(settings.bindings ?? config.input);
   } catch {
@@ -64,7 +70,9 @@ async function startMatch(request) {
   const serial = ++generation;
   const previousPhase = phase;
   phase = 'loading';
+  pauseAfterLoading = document.hidden || document.hasFocus?.() === false;
   input?.setActive(false);
+  audio.music.stop();
   audio.reset();
   audio.activate();
   try {
@@ -90,9 +98,11 @@ async function startMatch(request) {
       if (!config.roster.includes(opponentId)) throw new Error('请选择有效对手');
       actors.push({id:'p2',team:2,characterId:opponentId,x:config.spawn.opponentX, y:config.spawn.opponentY,facing:-1,level:1});
     }
-    const audibleFighters = actors.map(a => a.characterId);
-    if (mode === 'pve') audibleFighters.push(...config.stages[stageId].waves.flat().map(enemy => enemy.characterId));
-    await audio.prepare(config.fighterAudio, audibleFighters);
+    const matchFighters = actors.map(a => a.characterId);
+    if (mode === 'pve') matchFighters.push(...config.stages[stageId].waves.flat().map(enemy => enemy.characterId));
+    warmMatchArt(config, scene, matchFighters);
+    void audio.preparePerformance?.(scene.id, matchFighters);
+    await audio.prepare(config.fighterAudio, matchFighters);
     if (serial !== generation) return;
     battle = createBattle(config, {id:matchId(), mode, actors});
     holdRemaining = 0;
@@ -105,11 +115,15 @@ async function startMatch(request) {
     input.setActive(true);
     ui.renderBattle(battle);
     drawArena(ui.canvas, battle, settings);
-    if (document.hidden) pause();
+    audio.music.start(config.sceneMusic?.tracks[scene.id]);
+    if (pauseAfterLoading || document.hidden || document.hasFocus?.() === false) pause();
   } catch (err) {
     if (serial !== generation) return;
     phase = previousPhase;
-    if (previousPhase === 'playing') input?.setActive(true);
+    if (previousPhase === 'playing') {
+      if (pauseAfterLoading || document.hidden || document.hasFocus?.() === false) pause();
+      else input?.setActive(true);
+    }
     ui.showError(err.message || '载入战斗失败');
   }
 }
@@ -137,6 +151,7 @@ function tick() {
   recordBattleFeedback(battle);
   if (battle.mode === 'pve') tickStage(battle);
   audio.play(battle, settings.volume ?? 0.65);
+  if (battle.events.some(e => e.type === 'hit' && e.damage > 0 && ['heavy','ultimate'].includes(e.impact))) audio.music.duck();
   holdRemaining = impactHoldFrames(battle.events, battle.config.rules.impactHoldFrames);
   if (battle.result && holdRemaining === 0) void settle();
 }
@@ -144,6 +159,7 @@ function tick() {
 async function settle() {
   const announce = phase !== 'result';
   phase = 'settling';
+  audio.music.stop();
   clock.reset();
   input.setActive(false);
   const serial = generation;
@@ -168,7 +184,13 @@ async function settle() {
 }
 
 function pause() {
+  audio.music.pause();
   audio.reset();
+  if (phase === 'loading') {
+    // Keep this intent even if focus returns before the pending load completes.
+    pauseAfterLoading = true;
+    return;
+  }
   if (phase !== 'playing' && phase !== 'countdown') return;
   if (battle?.result) {
     void settle();
@@ -181,7 +203,7 @@ function pause() {
 }
 
 function resume() {
-  if (phase !== 'paused' || document.hidden) return;
+  if (phase !== 'paused' || document.hidden || document.hasFocus?.() === false) return;
   audio.activate();
   phase = 'countdown';
   resumeAt = performance.now() + config.rules.resumeSeconds * 1000;
@@ -191,10 +213,12 @@ function resume() {
 function exitMatch() {
   generation++;
   phase = 'menu';
+  audio.music.stop();
   input?.setActive(false);
   clock?.reset();
   audio.reset();
   holdRemaining = 0;
+  pauseAfterLoading = false;
   battle = null;
   controllers.clear();
   ui.home();
@@ -207,15 +231,17 @@ function redraw(now) {
     else {
       ui.showCountdown(0);
       phase = 'playing';
+      audio.music.resume();
       input.setActive(true);
       clock.reset();
     }
   }
   if (phase === 'playing') {
-    clock.advance(now);
-    if (phase === 'playing') {
-      ui.renderBattle(battle);
+    const ticks = clock.advance(now);
+    if (phase === 'playing' && ticks > 0) {
+      // Read the canvas dimensions before writing this tick's HUD changes.
       drawArena(ui.canvas, battle, settings);
+      ui.renderBattle(battle);
     }
   }
   requestAnimationFrame(redraw);
@@ -224,7 +250,7 @@ function redraw(now) {
 window.addEventListener('blur', pause);
 document.addEventListener('visibilitychange', () => { if (document.hidden) pause(); });
 window.addEventListener('keydown', e => {
-  if (e.code === 'Escape' && !e.repeat && (phase === 'playing' || phase === 'countdown')) {
+  if (e.code === 'Escape' && !e.repeat && ['playing','countdown','loading'].includes(phase)) {
     e.preventDefault();
     pause();
   }

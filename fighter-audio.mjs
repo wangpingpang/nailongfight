@@ -67,7 +67,7 @@ export function createCueRouter() {
   return {cues,reset}
 }
 
-async function defaultBytes(path) {
+export async function readAudioBytes(path) {
   const inline = globalThis.document?.getElementById('inline-fighter-audio')
   if (inline) {
     inline.audioClips ??= JSON.parse(inline.textContent)
@@ -80,7 +80,7 @@ async function defaultBytes(path) {
   return result.arrayBuffer()
 }
 
-export function createFighterSampler(context, output, readBytes = defaultBytes) {
+export function createFighterSampler(context, output, readBytes = readAudioBytes) {
   const pending = new Map()
   const buffers = new Map()
   const voices = new Set()

@@ -13,19 +13,22 @@ const previousInput = {
 const record = value => value !== null && typeof value === 'object' && !Array.isArray(value)
 const safeInteger = value => Number.isSafeInteger(value) && value >= 0
 const emptyReceipt = () => ({points:0, first:false, unlockedCharacter:null, nextStage:null})
+const initialCharacters = config => config.economy.initialCharacters ?? [config.economy.initialCharacter]
 
 function initialProfile(config) {
   const {initialStage} = config.economy
   return {
     schema_version:2, config_version:config.version, bindings_version:bindingVersion,
-    points:0, levels:Object.fromEntries(config.roster.map(id => [id,1])), clearedStages:[], unlockedStages:[initialStage],
+    points:0, levels:Object.fromEntries(initialCharacters(config).map(id => [id,1])), clearedStages:[], unlockedStages:[initialStage],
     settings:{}, settlements:{}
   }
 }
 
 function validSettings(settings, levels, roster) {
   if (!record(settings)) return false
-  if ('volume' in settings && !(Number.isFinite(settings.volume) && settings.volume >= 0 && settings.volume <= 1)) return false
+  for (const key of ['volume','musicVolume']) {
+    if (key in settings && !(Number.isFinite(settings[key]) && settings[key] >= 0 && settings[key] <= 1)) return false
+  }
   if ('reduceEffects' in settings && typeof settings.reduceEffects !== 'boolean') return false
   if ('selectedCharacter' in settings && (!Object.hasOwn(levels,settings.selectedCharacter) ||
       !roster.includes(settings.selectedCharacter))) return false
@@ -38,18 +41,22 @@ function validSettings(settings, levels, roster) {
 function decodedProfileMatches(p,config) {
   if (!record(p) || ![1,2].includes(p.schema_version) || !p.config_version || !safeInteger(p.points)) return false
 
-  const {initialCharacter,initialStage,levelCosts} = config.economy
+  const {initialStage,levelCosts} = config.economy
   const legacy = p.schema_version === 1
-  const roster = legacy ? legacyRoster : config.roster
-  if (!record(p.levels) || !Object.hasOwn(p.levels,legacy ? 'shell' : initialCharacter)) return false
+  if (!record(p.levels) || !Object.keys(p.levels).length || (legacy && !Object.hasOwn(p.levels,'shell'))) return false
   for (const [id,level] of Object.entries(p.levels)) {
-    if ((!roster.includes(id) && !legacyRoster.includes(id)) || !Number.isInteger(level) || level < 1 || level > levelCosts.length + 1) return false
+    // Roster membership means currently selectable, not ownership. Keep progress
+    // for known fighters while their roster entry is temporarily disabled.
+    const known = legacyRoster.includes(id) || (!legacy && config.characters[id]?.playable === true)
+    if (!known || !Number.isInteger(level) || level < 1 || level > levelCosts.length + 1) return false
   }
   const validStages = list => Array.isArray(list) && new Set(list).size === list.length &&
     list.every(id => Object.hasOwn(config.stages,id))
   if (!validStages(p.unlockedStages) || !p.unlockedStages.includes(initialStage) ||
       !validStages(p.clearedStages) || !p.clearedStages.every(id=>p.unlockedStages.includes(id))) return false
-  if (!validSettings(p.settings,p.levels,roster) || !record(p.settlements)) return false
+  // A formerly selected fighter may now be inactive. Validate ownership here;
+  // decode repairs selection, while updateSettings still enforces the live roster.
+  if (!validSettings(p.settings,p.levels,Object.keys(p.levels)) || !record(p.settlements)) return false
   if (p.legacySelectedCharacter !== undefined && !legacyRoster.includes(p.legacySelectedCharacter)) return false
   return Object.values(p.settlements).every(r =>
     record(r) && safeInteger(r.points) && typeof r.first === 'boolean' &&
@@ -101,15 +108,19 @@ function decode(raw, config) {
   try {
     const p = JSON.parse(raw)
     if (!record(p) || (p.bindings_version !== undefined && ![1,bindingVersion].includes(p.bindings_version))) return null
-    const notice = p.bindings_version === bindingVersion ? '' : migrateBindings(p, config.input)
+    let notice = p.bindings_version === bindingVersion ? '' : migrateBindings(p, config.input)
     if (!decodedProfileMatches(p,config)) return null
     const legacy = p.schema_version === 1
-    if (!legacy && config.roster.every(id => Object.hasOwn(p.levels,id))) return {profile:p,notice}
+    const unavailableSelection = p.settings.selectedCharacter && !config.roster.includes(p.settings.selectedCharacter)
+    if (!legacy && !unavailableSelection && initialCharacters(config).every(id => Object.hasOwn(p.levels,id))) return {profile:p,notice}
     // Project old saves on read. The next successful transaction persists the
     // additions under the same origin-wide lock as rewards and upgrades.
     if (legacy && p.settings.selectedCharacter) {
       p.legacySelectedCharacter = p.settings.selectedCharacter
       p.settings.selectedCharacter = config.economy.initialCharacter
+    } else if (unavailableSelection) {
+      p.settings.selectedCharacter = config.economy.initialCharacter
+      notice += '原出战角色暂不可用，已切换到初始角色；原等级与进度仍保留。'
     }
     return {profile:{...p, schema_version:2, config_version:config.version,
       levels:{...initialProfile(config).levels,...p.levels}},notice}
@@ -241,7 +252,7 @@ export function createProgressStore(config, storage = browserStorage()) {
     /** Persist valid controls and preferences without replacing unrelated fields. */
     updateSettings(patch) {
       return write(p => {
-        if (!record(patch) || Object.keys(patch).some(key=>!['volume','reduceEffects','bindings','selectedCharacter'].includes(key)))
+        if (!record(patch) || Object.keys(patch).some(key=>!['volume','musicVolume','reduceEffects','bindings','selectedCharacter'].includes(key)))
           return {changed:false,notice:'设置项目无效。'}
         const settings = {...p.settings,...patch}
         if (!validSettings(settings,p.levels,config.roster)) return {changed:false,notice:'设置值或键位无效。'}

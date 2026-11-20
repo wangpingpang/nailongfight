@@ -1,4 +1,5 @@
-import {backgrounds, performanceCaption} from './scene-performance.mjs';
+import {courierLine, doorSheetId} from './performance-score.mjs';
+import {performanceCaption} from './scene-performance.mjs';
 import {fighterStatus} from './fighter-status.mjs';
 import {canonicalKeyCode, validateBindings} from './config.mjs';
 
@@ -77,7 +78,7 @@ export function createUI(root, callbacks) {
     const id=profile.settings?.selectedCharacter;
     return playable().some(c=>c.id===id) && profile.levels[id] ? id : config.economy.initialCharacter;
   };
-  const settings = () => ({volume:.65, reduceEffects:false, bindings:config.input,...profile.settings});
+  const settings = () => ({volume:.65, musicVolume:config.sceneMusic?.defaultVolume ?? 0, reduceEffects:false, bindings:config.input,...profile.settings});
   const call = (name,...args) => callbacks[name]?.(...args);
   const brandTitle=node('b');
   const brand = button('brand',[
@@ -165,8 +166,7 @@ export function createUI(root, callbacks) {
     characterOrigin=origin; selected=defaultHero(); go('characters');
   }
   function fighterButton(character,active,action,sub) {
-    const moduleName=character.metadata?.sourceName;
-    const detail=[moduleName && ('模块原名 · '+moduleName),sub || character.role].filter(Boolean).join(' ｜ ');
+    const detail=sub || character.role;
     const btn=button('fighter',[img(lookupImage(character,config),''),node('span',null,node('b',null,character.name),node('small',null,detail))],action);
     btn.setAttribute('aria-pressed',String(active));
     return btn;
@@ -193,13 +193,12 @@ export function createUI(root, callbacks) {
     });
     pick.disabled=!level || busy;
     const sourceName=characterOrigin==='stages'?'返回关卡':characterOrigin==='result'?'返回结算':'返回大厅';
-    main.replaceChildren(back(()=>go(characterOrigin),sourceName),title('FIGHTERS','角色档案',config.roleModule?'角色模块候选素材 · 仅供内测试玩。':''),
+    main.replaceChildren(back(()=>go(characterOrigin),sourceName),title('FIGHTERS','角色档案',''),
       node('div','roster',playable().map(ch=>fighterButton(ch,ch.id===c.id,()=>{selected=ch.id;paint();},profile.levels[ch.id]?'Lv. '+profile.levels[ch.id]+' · '+ch.role:'闯关未解锁'))),
       node('section','section split',node('div','portrait-area',Object.assign(img(lookupImage(c,config),c.name),{className:'portrait'})),
         node('article','panel',node('div','row-between',node('h2',null,c.name),tag(level?'Lv. '+level:'待解锁')),
           node('div','pills',tag(c.role),tag('生命 '+Math.round(c.hp*baseMult)),tag('攻击 '+Math.round(c.attack*baseMult))),
-          c.metadata?.sourceName?muted('沿用「'+c.metadata.sourceName+'」模块技能，本版采用独立测试外形。'):null,
-          muted(c.description),muted(c.playstyle),backgrounds[c.id]?muted(backgrounds[c.id]):null,list,level?null:muted('首次通过「'+Object.values(config.stages).find(s=>s.unlockCharacter===c.id)?.name+'」解锁。'),
+          muted(c.description),muted(c.playstyle),list,level?null:muted('首次通过「'+Object.values(config.stages).find(s=>s.unlockCharacter===c.id)?.name+'」解锁。'),
           node('div','actions',pick,upgrade))));
   }
   function paintStages() {
@@ -255,21 +254,70 @@ export function createUI(root, callbacks) {
     return help;
   }
   function startButton(label,options,disabled=false) {
-    const btn=button('primary',[label,icon('arrow')],async ()=>{
-      if(busy)return; busy=true; btn.disabled=true;
-      try{await call('onStart',options());}catch(e){displayNotice(e.message);}finally{busy=false;if(btn.isConnected)btn.disabled=disabled;}
+    const caption = node('span', null, label);
+    const btn=button('primary',[caption,icon('arrow')],async ()=>{
+      if (busy) return;
+      busy = true;
+      btn.disabled = true;
+      btn.setAttribute('aria-busy','true');
+      write(caption,'正在进入擂台…');
+      try {
+        await call('onStart', options());
+      } catch (e) {
+        displayNotice(e.message);
+      } finally {
+        busy = false;
+        if (btn.isConnected) {
+          btn.disabled = disabled;
+          btn.removeAttribute('aria-busy');
+          write(caption,label);
+        }
+      }
     });
     btn.disabled=disabled||busy;return btn;
+  }
+  let preview = null;
+  function stopPreview() {
+    if (!preview) return;
+    clearTimeout(preview.end);
+    preview.figure.hidden = true;
+    preview.figure.classList.remove('show-door');
+    preview = null;
+    call('onStopPreview');
+  }
+  window.addEventListener('blur',stopPreview);
+
+  function showPreview(slot) {
+    const figure = main.querySelector('[data-door-preview="'+slot+'"]');
+    if (!figure) return;
+    stopPreview();
+    figure.hidden = false;
+    // Restart the four held poses on every explicit replay.
+    void figure.offsetWidth;
+    figure.classList.add('show-door');
+    call('onDoorPreview');
+    preview = {figure, end:setTimeout(stopPreview,2100)};
+  }
+  function doorPreview(slot) {
+    const pose=node('span','door-pose');
+    const asset=config.assets[doorSheetId];
+    if(asset) pose.style.backgroundImage='url("'+asset.path+'")';
+    const figure=node('div','door-preview',pose,node('span',null,courierLine));
+    figure.dataset.doorPreview=slot; figure.hidden=true;
+    return node('div','actions',button('minor','重播指路动作',()=>showPreview(slot)),figure);
   }
   function paintSelect() {
     const dual=mode==='pvp', count=dual?2:1;
     const panels=[];
     for(let i=0;i<count;i++) {
       const c=config.characters[picks[i]], slot=i?'p2':'p1';
-      const choose=playable().map(ch=>fighterButton(ch,c.id===ch.id,()=>{picks[i]=ch.id;ready[i]=false;paint();}));
+      const choose=playable().map(ch=>fighterButton(ch,c.id===ch.id,()=>{
+        picks[i]=ch.id; ready[i]=false; paint();
+        if(ch.id==='courier') showPreview(slot);
+      }));
       const confirm=button(ready[i]?'quiet ready':'minor',ready[i]?[icon('tick'),'已就绪 · 取消']:'玩家 '+(i+1)+' 就绪',()=>{ready[i]=!ready[i];paint();});
       panels.push(node('section','panel',node('div','row-between',node('h2',null,dual?'玩家 '+(i+1):'选择斗士'),tag(dual?slot.toUpperCase():'玩家')),
-        node('div','roster pick-grid',choose),node('div','pills',tag(c.role)),muted(c.playstyle),backgrounds[c.id]?muted(backgrounds[c.id]):null,keyHelp(slot),dual?node('div','actions',confirm):null));
+        node('div','roster pick-grid',choose),node('div','pills',tag(c.role)),c.id==='courier'?doorPreview(slot):null,muted(c.playstyle),keyHelp(slot),dual?node('div','actions',confirm):null));
     }
     const info=dual?'双方各自选择斗士并就绪。竞技属性统一，支持镜像选角。':mode==='training'?'假人保持静止，可自由试招。':'电脑控制镜像斗士，双方使用相同的基础属性。';
     main.replaceChildren(back(()=>go('home')),title(dual?'LOCAL VERSUS':mode==='training'?'PRACTICE':'SOLO ARENA',config.uiText[mode],info),
@@ -312,7 +360,9 @@ export function createUI(root, callbacks) {
     if(battle.mode==='pvp'&&p2)strips.push(actionStrip(p2,'p2'));
     const stageName=battle.stage?config.stages[battle.stage.id].name:null;
     const bar=node('div','battle-bar',node('div','battle-heading',node('h1',null,stageName || config.uiText[battle.mode]),stageName===scene.name?null:tag(scene.name)),
-      button('tool',[icon('pause'),'暂停'],()=>call('onPause')));
+      node('div','actions', battle.mode==='training' && p1?.characterId==='courier' ?
+        button('minor','重播指路动作',()=>call('onTrainingReplay')) : null,
+        button('tool',[icon('pause'),'暂停'],()=>call('onPause'))));
     main.replaceChildren(bar,node('section','battle-shell',node('div','hud-top',left.el,node('div','clock',clock,clockLabel),right.el),
       field,caption,node('div','hud-bottom',strips.map(s=>s.el))),hint);
     hud={canvas,caption,left,right,clock,clockLabel,hint,strips,battleId:battle.id,lastNotice:'',until:0};
@@ -342,24 +392,33 @@ export function createUI(root, callbacks) {
       if(remaining===0) v.hitFrame=null;
     }
     const trailWidth=width(trailHp);
-    if(v.trail.style.width!==trailWidth) v.trail.style.width=trailWidth;
+    if(v.trailWidth!==trailWidth) {
+      v.trail.style.width=trailWidth;
+      v.trailWidth=trailWidth;
+    }
     v.actorId=a?.id; v.characterId=a?.characterId; v.maxHp=maxHp; v.lastHp=hp; v.wave=wave;
   }
   function showVitals(v,a,role,battle) {
     updateHealth(v,a,battle);
-    if(!a) {write(v.name,'等待入场');write(v.hp,'');write(v.status,role);write(v.energy,'');v.energyFill.style.width='0%';return;}
+    const energy=a?.energy ?? 0;
+    if(v.lastEnergy!==energy) {
+      v.energyFill.style.width=Math.max(0,Math.min(100,100*energy/config.rules.energyMax))+'%';
+      v.lastEnergy=energy;
+    }
+    if(!a) {write(v.name,'等待入场');write(v.hp,'');write(v.status,role);write(v.energy,'');return;}
     const c=config.characters[a.characterId];
     write(v.name,c.name);write(v.hp,Math.ceil(a.hp)+' / '+a.maxHp);
     write(v.status,role);write(v.energy,'能量 '+Math.floor(a.energy));
-    v.energyFill.style.width=Math.max(0,Math.min(100,100*a.energy/config.rules.energyMax))+'%';
   }
   function updateStrip(strip,actor,b) {
     const c=b.config.characters[actor.characterId],keys=settings().bindings[strip.slot];
     const trait=fighterStatus(b,actor);
-    strip.trait.hidden=!trait;
+    const hideTrait=!trait;
+    if(strip.trait.hidden!==hideTrait) strip.trait.hidden=hideTrait;
     if(trait) {
       write(strip.trait,trait.name+' · '+trait.text);
-      strip.trait.dataset.active=String(trait.active);
+      const active=String(trait.active);
+      if(strip.trait.dataset.active!==active) strip.trait.dataset.active=active;
     }
     for(const [k,item] of Object.entries(strip.data)) {
       const skill=b.config.skills[c[k]], cd=actor.cooldowns?.[k] || 0;
@@ -367,7 +426,8 @@ export function createUI(root, callbacks) {
       const low=k==='ult'&&actor.energy<(skill?.cost ?? config.rules.energyMax);
       write(item.key,keyName(keys[k]));write(item.text,label);
       write(item.hint,cd>0?seconds(cd,b.config.rules.tickRate)+'s':low?'能量不足':'');
-      item.cell.dataset.ready=String(!cd&&!low);
+      const ready=String(!cd&&!low);
+      if(item.cell.dataset.ready!==ready) item.cell.dataset.ready=ready;
     }
   }
   function renderBattle(battle) {
@@ -456,8 +516,8 @@ export function createUI(root, callbacks) {
     }
     let next=null;
     if(stage && win && !receipt?.notice){
-      const entries=Object.values(config.stages),index=entries.findIndex(x=>x.id===stage.id);
-      if(entries[index+1]&&profile.unlockedStages.includes(entries[index+1].id))next=button('primary',['下一关',icon('arrow')],()=>call('onNext'));
+      const nextStage=stage.unlockStage;
+      if(nextStage && profile.unlockedStages.includes(nextStage))next=button('primary',['下一关',icon('arrow')],()=>call('onNext'));
     }
     // PVE waves can contain several enemies. Show the player's outcome and
     // the last opponent without delaying settlement or advancing combat.
@@ -476,17 +536,21 @@ export function createUI(root, callbacks) {
   function closeSettings() { draft=null; bindingsCapture=null; if(screen==='battle')showPause();else releaseOverlay(); }
   const tabNames={p1:'玩家 1',p2:'玩家 2'};
   function openSettings() {
+    stopPreview();
     if(!initialized || overlay==='countdown')return;
     if(screen==='battle' && overlay!=='pause' && overlay!=='settings')call('onPause');
     draft=structuredClone(settings());bindingsCapture=null;
     paintSettings('');
   }
   function paintSettings(error) {
-    const volume=node('input'),effects=node('input');
-    volume.type='range';volume.min='0';volume.max='100';volume.value=String(Math.round(draft.volume*100));
-    const output=node('output',null,volume.value+'%');
-    const volumeRow=node('label','setting-row','音量',volume,output);
-    volume.addEventListener('input',()=>{draft.volume=Number(volume.value)/100;write(output,volume.value+'%');});
+    const effects=node('input');
+    function volumeSlider(label, key) {
+      const slider=node('input');
+      slider.type='range'; slider.min='0'; slider.max='100'; slider.value=String(Math.round(draft[key]*100));
+      const output=node('output',null,slider.value+'%');
+      slider.addEventListener('input',()=>{ draft[key]=Number(slider.value)/100; write(output,slider.value+'%'); });
+      return node('label','setting-row',label,slider,output);
+    }
     effects.type='checkbox';effects.checked=!!draft.reduceEffects;
     effects.addEventListener('change',()=>{draft.reduceEffects=effects.checked;});
     const map=node('div','bindings',node('b',null,'动作'),node('b',null,tabNames.p1),node('b',null,tabNames.p2));
@@ -505,7 +569,7 @@ export function createUI(root, callbacks) {
       try{await call('onSettings',draft);closeSettings();}
       catch(e){if(draft)paintSettings(e.message);}
     });
-    modal('settings','操作设置',volumeRow,node('label','setting-row','减少画面动态效果',effects),
+    modal('settings','操作设置',volumeSlider('总音量','volume'),volumeSlider('场景音乐','musicVolume'),node('label','setting-row','减少画面动态效果',effects),
       node('h3',null,'键盘映射'),muted('点击动作对应的键位，再按新键。数字 1–6 支持主键盘与小键盘。O 和 6 默认预留，可改绑。Esc 暂停。'),map,
       ...(error?[node('p','errorline',error)]:[]),node('div','actions',save,button('quiet','取消',closeSettings),
         button('quiet','恢复默认键位',()=>{draft.bindings=structuredClone(config.input);bindingsCapture=null;paintSettings('');})));
@@ -549,6 +613,7 @@ export function createUI(root, callbacks) {
   },{capture:true});
   function paint() {
     if(!initialized)return;
+    stopPreview();
     reflect();
     switch(screen) {
       case 'home':paintHome();break;case 'stages':paintStages();break;

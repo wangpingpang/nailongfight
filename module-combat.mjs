@@ -72,14 +72,11 @@ export function walkingScale(b, a) {
   return p?.type === 'fed' && a.fedUntil > b.frame ? scale * p.speedMultiplier : scale
 }
 
-function slide(b, a, input) {
+function slide(b, a, input, landingX) {
   const c = a.cast, s = c.skill, e = s.effect
   const moveAge = a.age - s.startup
-  if (moveAge < 0) return {shape:circle(c.targetX, c.targetY, e.radius), phase:'warning'}
+  if (moveAge < 0) return {shape:circle(landingX, c.targetY, e.radius), phase:'warning'}
   if (moveAge < e.slideFrames && c.slideStoppedAt === null) {
-    const t = (moveAge + 1) / e.slideFrames
-    a.x = c.originX + (c.targetX - c.originX) * t
-    a.y = c.originY + (c.targetY - c.originY) * t
     if (input.s2) {
       // Finish this movement tick, then begin the one existing four-frame attack.
       c.slideStoppedAt = a.age + 1
@@ -87,14 +84,14 @@ function slide(b, a, input) {
       a.duration = c.slideStoppedAt + s.active + s.recovery
       b.events.push({type:'stop',sourceId:a.id,x:a.x,y:a.y})
     }
-    return {shape:circle(c.earlyStop ? a.x : c.targetX, c.earlyStop ? a.y : c.targetY, e.radius), phase:'warning'}
+    return {shape:circle(c.earlyStop ? a.x : landingX, c.earlyStop ? a.y : c.targetY, e.radius), phase:'warning'}
   }
   const attackAge = a.age - (c.slideStoppedAt ?? s.startup + e.slideFrames)
   return {shape:circle(a.x,a.y,e.radius), phase:attackAge < s.active ? 'active' : 'recovery'}
 }
 
-/** Describe this module action's hit geometry and move its ground hurtbox, when applicable. */
-export function moduleAction(b, a, input, phase, move) {
+/** Describe the module action's hit geometry at the resolved ground position. */
+export function moduleAction(b, a, input, phase, landingX) {
   const c = a.cast, s = c.skill, e = s.effect
   switch (e.type) {
     case 'feed': {
@@ -104,7 +101,6 @@ export function moduleAction(b, a, input, phase, move) {
       return {phase:'feeding'}
     }
     case 'backstep':
-      if (phase === 'active') move(b, a, {x:-c.facing,y:0}, e.distance / s.active)
       return {phase:'movement'}
     case 'semicircle':
       return {shape:{kind:'semicircle', x:a.x,y:a.y,radius:e.radius,facing:c.facing},phase}
@@ -115,7 +111,7 @@ export function moduleAction(b, a, input, phase, move) {
       if (phase === 'warning' && e.type === 'field') return {shape:circle(c.targetX,c.targetY,e.radius),phase}
       return {phase:'placement'}
     case 'slide':
-      return slide(b,a,input)
+      return slide(b,a,input,landingX)
     default:
       return null
   }

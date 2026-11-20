@@ -1,6 +1,8 @@
 import {buildFighterAnimation} from './fighter-animation.mjs'
 
 const actions = ['up', 'down', 'left', 'right', 'basic', 's1', 's2', 'defend', 'ult']
+export const FLOOR_WIDTH_FRACTION = .91
+export const CAMERA_HARD_INSET = .08
 
 function requireField(condition, path, description) {
   if (!condition) throw new Error(`配置错误 · ${path} · ${description}`)
@@ -84,6 +86,18 @@ function checkRules(r) {
     const durations = object(r.impactHoldFrames, path)
     numbers(durations, ['light','medium','heavy','ultimate','guard'], path, 0, true)
   }
+}
+
+function checkCamera(camera, arenaWidth) {
+  object(camera, 'camera')
+  number(camera.viewFraction, 'camera.viewFraction', Number.EPSILON)
+  requireField(camera.viewFraction <= 1, 'camera.viewFraction', '取景宽度不能超过整幅场景')
+  number(camera.edgeInset, 'camera.edgeInset', CAMERA_HARD_INSET)
+  requireField(camera.edgeInset < .5, 'camera.edgeInset', '两侧跟随区之间须有可用空间')
+  number(camera.maxSeparation, 'camera.maxSeparation', Number.EPSILON)
+  const visibleWorldWidth = arenaWidth * camera.viewFraction / FLOOR_WIDTH_FRACTION
+  requireField(camera.maxSeparation <= visibleWorldWidth * (1 - 2 * CAMERA_HARD_INSET),
+    'camera.maxSeparation', '最大间距必须为画面两端的角色各留出至少 8% 的宽度')
 }
 
 function checkSkill(s, path) {
@@ -231,6 +245,8 @@ function checkStages(config) {
     checkArenaPoint(spawn.playerX, spawn.playerY, 'spawn.player', rules, fighter)
     checkArenaPoint(spawn.opponentX, spawn.opponentY, 'spawn.opponent', rules, fighter)
   }
+  if (config.camera) requireField(Math.abs(spawn.playerX - spawn.opponentX) <= config.camera.maxSeparation,
+    'spawn.opponentX', '开场间距超过双人镜头的最大间距')
   table(stages, 'stages', (s, path) => {
     words(s, ['name','description'], path)
     numbers(s, ['firstReward','repeatReward'], path, 0, true)
@@ -314,7 +330,8 @@ function checkFighterModule(config) {
         requireField(clip.pivot[axis] <= clip.cell[axis], path + '.pivot', '锚点超出画格')
       }
     }
-    for (const key of clip.cell ? ['A','B','C','D'] : ['A','B','C']) reference(assets, clip.sheets[key], path + '.sheets.' + key)
+    const sheetKeys = new Set([...(clip.cell ? ['A','B','C','D'] : ['A','B','C']), ...Object.keys(clip.sheets)])
+    for (const key of sheetKeys) reference(assets, clip.sheets[key], path + '.sheets.' + key)
     numbers(clip, ['rows','columns'], path, 1, true)
     requireField(Array.isArray(clip.actions), path + '.actions', '需要动作列表')
     const ids = new Set()
@@ -325,6 +342,13 @@ function checkFighterModule(config) {
       requireField(!ids.has(action.id), ap + '.id', '动作 ID 重复')
       ids.add(action.id)
       reference(clip.sheets, action.sheet, ap + '.sheet')
+      if (action.openingPose) {
+        const pose = action.openingPose
+        reference(clip.sheets, pose.sheet, ap + '.openingPose.sheet')
+        number(pose.row, ap + '.openingPose.row', 0, true)
+        number(pose.column, ap + '.openingPose.column', 0, true)
+        requireField(pose.row < clip.rows && pose.column < clip.columns, ap + '.openingPose', '起势超出图集')
+      }
       number(action.row, ap + '.row', 0, true)
       requireField(action.row < clip.rows, ap + '.row', '超出图集行数')
       requireField(Array.isArray(action.columns) && action.columns.length > 0, ap + '.columns', '动作必须含有关键姿态')
@@ -391,6 +415,22 @@ export function resolveScene(config, sceneId = config.defaultScene) {
   return reference(config.scenes, sceneId, 'sceneId')
 }
 
+function checkSceneMusic(config) {
+  const {tracks, defaultVolume} = object(config.sceneMusic, 'sceneMusic')
+  number(defaultVolume, 'sceneMusic.defaultVolume')
+  requireField(defaultVolume <= 1, 'sceneMusic.defaultVolume', '音量须在0到1之间')
+  object(tracks, 'sceneMusic.tracks')
+  for (const id of Object.keys(config.scenes)) {
+    const label = 'sceneMusic.tracks.' + id
+    const track = reference(tracks, id, label)
+    words(track, ['title','path'], label)
+    requireField(/^\.\/assets\/music\/[a-z0-9_-]+\.ogg$/.test(track.path), label + '.path', '需要本地 Ogg 曲目')
+    number(track.sampleRate, label + '.sampleRate', 1, true)
+    number(track.loopStartSample, label + '.loopStartSample', 0, true)
+    number(track.loopEndSample, label + '.loopEndSample', track.loopStartSample + 1, true)
+  }
+}
+
 function checkFighterAudio(config) {
   const {banks, gains, heavyStartup, stepFrames} = object(config.fighterAudio, 'fighterAudio')
   object(banks, 'fighterAudio.banks')
@@ -416,6 +456,7 @@ export function validateConfig(config) {
   words(object(config.uiText, 'uiText'), ['title','home','characters','stages','vs_ai','pvp','training','pve','heroDescription',
     'heroAction','modeHeading','pveDescription','pvpDescription','trainingDescription'], 'uiText')
   checkRules(config.rules)
+  if (config.camera !== undefined) checkCamera(config.camera, config.rules.arenaWidth)
   table(config.assets, 'assets', (asset, path) => {
     words(asset, ['path','use','author','source','license','realPersonCheck','ipCheck','status'], path)
   })
@@ -428,6 +469,7 @@ export function validateConfig(config) {
   checkPassives(config)
   table(config.characters, 'characters', (row, path) => checkCharacter(row, path, config))
   if (config.fighterAudio) checkFighterAudio(config)
+  if (config.sceneMusic) checkSceneMusic(config)
   checkStages(config)
   checkAi(config.ai)
   if (config.roleModule) checkFighterModule(config)

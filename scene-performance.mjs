@@ -1,17 +1,5 @@
-const reactions = {
-  'lantern-stage': ['miss', ''],
-  'melon-market': ['down', '……我拿别的担保。'],
-  'bamboo-hall': ['hit', '主审：请证人指认茶盏。　书记：请茶盏指认证人。'],
-  'rain-tram': ['double-miss', '都停一下！……五、六、七，走！']
-};
-
-export const backgrounds = {
-  melancholy: '它早就想下班了。可它一停步，找钥匙的人就看不见了。',
-  laughing: '它给全街拍过证件照。最端正的一张，拍的是空凳子。',
-  sacred: '只要有东西掉下来，它就郑重迎接。今天轮到它自己。',
-  courier: '街坊请它当门神。所有人都进去了，还说这门神真有礼貌。'
-};
-
+import {courierLine, currentStory, stageScores} from './performance-score.mjs';
+import {paintStageReaction} from './stage-theatre.mjs';
 export function createPerformance() {
   return {casts:new Map(), approaches:new Set(), reaction:null, dialogue:null, lastMiss:null};
 }
@@ -19,7 +7,7 @@ export function createPerformance() {
 export function updatePerformance(battle, attacks) {
   const {performance:p, frame, actors, events, config} = battle;
   const scene = battle.sceneId ?? config.defaultScene;
-  const [trigger, text] = reactions[scene] ?? [];
+  const trigger = stageScores[scene]?.trigger;
   const misses = [];
   for (const {cast,source} of attacks) p.casts.set(cast,source);
   for (const [cast,source] of p.casts) {
@@ -44,7 +32,7 @@ export function updatePerformance(battle, attacks) {
     }
     if (source || events.some(event => event.type === trigger ||
         trigger === 'down' && event.type === 'ko')) {
-      p.reaction = {frame, text, x:source?.x};
+      p.reaction = {frame, x:source?.x};
     }
   }
 
@@ -65,7 +53,7 @@ export function updatePerformance(battle, attacks) {
       const key = JSON.stringify([actor.id,enemy.id]);
       approaches.add(key);
       if (!p.approaches.has(key) && ['IDLE','MOVE'].includes(actor.state)) {
-        p.dialogue = {frame, actorId:actor.id, text:'P' + actor.team + ' 美团袋鼠：你的胆子真是肥嘟嘟的'};
+        p.dialogue = doorDialogue(battle, actor);
         return;
       }
     }
@@ -73,90 +61,32 @@ export function updatePerformance(battle, attacks) {
   p.approaches = approaches;
 }
 
-export function performanceCaption(battle) {
-  const {dialogue,reaction} = battle.performance;
-  const duration = 2 * battle.config.rules.tickRate;
-  return [dialogue,reaction]
-    .filter(item => item && !item.interrupted && battle.frame - item.frame < duration)
-    .map(item => item.text).filter(Boolean).join('　');
+function doorDialogue(battle, actor) {
+  return {frame:battle.frame, actorId:actor.id, text:'P'+actor.team+' '+battle.config.characters[actor.characterId].name+'：'+courierLine};
 }
 
-export function drawScenePerformance(ctx, view, battle) {
+export function replayTrainingLine(battle) {
+  if (!battle || battle.result || battle.mode !== 'training') return false;
+  const actor = battle.actors.find(a => a.team === 1 && a.characterId === 'courier');
+  if (!actor || !['IDLE','MOVE'].includes(actor.state)) return false;
+  battle.performance.dialogue = doorDialogue(battle, actor);
+  return true;
+}
+
+export function performanceCaption(battle) {
+  const line = battle.performance.dialogue;
+  const story = currentStory(battle);
+  const subtitles = story?.beats.find(beat => beat.caption && story.age >= beat.at && story.age < beat.at + beat.hold);
+  return [line && battle.frame - line.frame < 2 * battle.config.rules.tickRate ? line.text : '',
+    subtitles?.caption].filter(Boolean).join('　');
+}
+
+export function drawScenePerformance(ctx, view, battle, reduced = false) {
   if (!battle.performance) return;
   const scene = battle.sceneId ?? battle.config.defaultScene;
   const reaction = battle.performance.reaction;
-  const age = reaction ? battle.frame - reaction.frame : Infinity;
-  const active = age < 105 && !reaction.interrupted;
-  const {width:w,height:h} = view;
-  ctx.save();
-  ctx.translate(w/2,h*.39);
-  ctx.scale(w/720,h/300);
-  ctx.lineCap = 'round';
-  ctx.lineWidth = 4;
-  ctx.strokeStyle = '#493e39';
-  ctx.fillStyle = '#d7ba79';
-  if (scene === 'lantern-stage') {
-    const x = active ? (view.x(reaction.x)-w/2)*720/w : 0;
-    for (const offset of [-115,115]) {
-      ctx.fillStyle = '#ffdc8055';
-      ctx.beginPath();
-      ctx.moveTo(offset,-117);
-      const focus = active ? x : offset * .56;
-      ctx.lineTo(focus-50,48);
-      ctx.lineTo(focus+50,48);
-      ctx.fill();
-      for (const shift of [-32,32]) {
-        const person = offset + shift;
-        ctx.strokeStyle = '#402d52';
-        ctx.beginPath();
-        ctx.arc(person,-4,6,0,Math.PI*2);
-        ctx.moveTo(person,2);
-        ctx.lineTo(person,24);
-        ctx.lineTo(person-6,39);
-        ctx.moveTo(person,24);
-        ctx.lineTo(person+6,39);
-        ctx.moveTo(person,10);
-        ctx.lineTo(person+(active ? Math.sign(x-person)*20 : -3),active ? 3 : 19);
-        ctx.stroke();
-      }
-    }
-  } else if (scene === 'melon-market') {
-    ctx.fillRect(102,29,48,6);
-    ctx.fillRect(123,2,7,27);
-    ctx.fillRect(105,-3,44,5);
-    const drop = !reaction ? 0 : Math.min(23,age*1.3);
-    ctx.fillStyle = '#40434c';
-    ctx.fillRect(121 + (reaction ? Math.max(0,Math.min(23,age-48)) : 0),2+drop,11,6);
-  } else if (scene === 'bamboo-hall') {
-    ctx.fillRect(-15,24,30,5);
-    ctx.fillStyle = '#d4e8da';
-    ctx.fillRect(-9,9,18,15);
-    ctx.translate(0,9);
-    ctx.rotate(active && age > 28 ? .6 : 0);
-    ctx.fillRect(-12,-3,24,4);
-  } else if (scene === 'rain-tram') {
-    for (const x of [-68,68]) {
-      ctx.fillStyle = '#9ddaf077';
-      ctx.beginPath();
-      ctx.ellipse(x,40,28,5,0,0,Math.PI*2);
-      ctx.fill();
-      ctx.save();
-      ctx.translate(x,active ? 4*Math.sin(age/4) : -8);
-      ctx.fillStyle = '#e1a86b';
-      ctx.beginPath();
-      ctx.moveTo(0,-32);
-      ctx.lineTo(-7,17);
-      ctx.lineTo(7,17);
-      ctx.closePath();
-      ctx.fill();
-      ctx.beginPath();
-      ctx.moveTo(0,17);
-      ctx.lineTo(0,29);
-      ctx.stroke();
-      ctx.restore();
-    }
-  }
-  ctx.restore();
+  const age = reaction && !reaction.interrupted ? (battle.frame - reaction.frame)*60/battle.config.rules.tickRate : -1;
+  paintStageReaction(scene, ctx, view, age, reaction?.x, reduced);
 }
 
 export function fighterPerformance(battle, actor, reduced) {

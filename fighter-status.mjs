@@ -30,7 +30,7 @@ export function fighterStatus(battle, actor) {
     case 'mirth':
       active = !!actor.cast?.mirth || actor.mirthUntil > battle.frame
       text = actor.cast?.mirth ? '本次震波已强化' : active ?
-        '笑意 '+seconds(actor.mirthUntil-battle.frame)+' 秒 · 震波可强化' : '跃进命中可获得笑意'
+        '余振 '+seconds(actor.mirthUntil-battle.frame)+' 秒 · 震波可强化' : '跃进命中可获得余振'
       break
     case 'resonance': {
       const field = ownedEffect(battle,actor,'field')
@@ -48,7 +48,7 @@ export function fighterStatus(battle, actor) {
     case 'fed':
       active = !!actor.cast?.fed || actor.fedUntil > battle.frame
       text = actor.cast?.fed ? '本次冲撞已强化' : active ?
-        '饱腹 '+seconds(actor.fedUntil-battle.frame)+' 秒 · 移速提升' : '完成进食可获得饱腹'
+        '炽热 '+seconds(actor.fedUntil-battle.frame)+' 秒 · 移速提升' : '完成添炭可获得炽热'
       break
     case 'hitRefund': {
       const bubble = ownedEffect(battle,actor,'projectile')

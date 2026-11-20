@@ -1,13 +1,37 @@
 {
-  "fighterModule": "fighters-v04.json",
-  "version": "0.1.3",
+  "version": "T07-web.1",
   "fighterAudio": {
-    "banks": {"melancholy":"melancholy", "laughing":"laughing", "sacred":"sacred", "nailong":"dragon", "courier":"kangaroo"},
+    "banks": {
+      "melancholy": "pendulum",
+      "laughing": "drum",
+      "sacred": "prism",
+      "nailong": "kiln",
+      "courier": "glider",
+      "doubao": "bell"
+    },
     "stepFrames": 15,
     "heavyStartup": 18,
-    "gains": {"basic1":0.79, "basic2":0.79, "basic3":0.81, "skill1":0.82, "skill2":0.82, "ult":0.86, "hit":0.48, "block":0.73, "move":0.48, "evade":0.66, "windup":0.51, "victory":0.85}
+    "gains": {
+      "basic1": 0.79,
+      "basic2": 0.79,
+      "basic3": 0.81,
+      "skill1": 0.82,
+      "skill2": 0.82,
+      "ult": 0.86,
+      "hit": 0.48,
+      "block": 0.73,
+      "move": 0.48,
+      "evade": 0.66,
+      "windup": 0.51,
+      "victory": 0.85
+    }
   },
   "tuningNote": "假设值。时序与冷却单位为逻辑帧，坐标与尺寸单位为 U，速度单位为 U/秒。",
+  "camera": {
+    "viewFraction": 0.6666666666666666,
+    "edgeInset": 0.15,
+    "maxSeparation": 9
+  },
   "rules": {
     "tickRate": 60,
     "arenaWidth": 16,
@@ -49,7 +73,8 @@
       "heavy": 5,
       "ultimate": 7,
       "guard": 3
-    }
+    },
+    "resetComboOnStunExit": true
   },
   "characters": {
     "shell": {
@@ -151,6 +176,181 @@
       "passive": null,
       "asset": "ranged",
       "ai": "ranged"
+    },
+    "melancholy": {
+      "id": "melancholy",
+      "name": "蓝摆针",
+      "role": "舞步反击",
+      "description": "回声工坊的校音师在壳里装了枚偏心摆锤。它用一拍后退量出对方的手长，下一拍把整副表盘旋回来。",
+      "theme": "节拍与闪身",
+      "playstyle": "退半步，把反击留给下一拍。",
+      "color": "#849DC9",
+      "playable": true,
+      "canDefend": true,
+      "hp": 1000,
+      "attack": 100,
+      "speed": 4,
+      "hurtWidth": 1,
+      "hurtDepth": 0.5,
+      "basic": [
+        "melancholy.n1",
+        "melancholy.n2",
+        "melancholy.n3"
+      ],
+      "s1": "melancholy.s1",
+      "s2": "melancholy.s2",
+      "ult": "melancholy.ult",
+      "passive": "melancholy.passive",
+      "asset": "echo.pendulum.portrait",
+      "ai": "melancholy",
+      "presentation": "atlas",
+      "animation": "melancholy"
+    },
+    "laughing": {
+      "id": "laughing",
+      "name": "簧鼓咚",
+      "role": "弹跳扰阵",
+      "description": "这面定音鼓曾在合奏里漏掉一个重音。它给自己换上廊灯弹簧，此后总比指挥先一步跳上拍点。",
+      "theme": "鼓皮与弹簧",
+      "playstyle": "用弹簧跳击抢到对手身边，积起余振后用鼓腹震波扩大战果。",
+      "color": "#D1AC39",
+      "playable": true,
+      "canDefend": true,
+      "hp": 1000,
+      "attack": 100,
+      "speed": 4,
+      "hurtWidth": 1,
+      "hurtDepth": 0.5,
+      "basic": [
+        "laughing.n1",
+        "laughing.n2",
+        "laughing.n3"
+      ],
+      "s1": "laughing.s1",
+      "s2": "laughing.s2",
+      "ult": "laughing.ult",
+      "passive": "laughing.passive",
+      "asset": "echo.drum.portrait",
+      "ai": "laughing",
+      "presentation": "atlas",
+      "animation": "laughing"
+    },
+    "sacred": {
+      "id": "sacred",
+      "name": "棱灯司",
+      "role": "光环控场",
+      "description": "负责给夜班学徒照路的棱镜灯喜欢把光照得横平竖直。哪条路线越了线，它就把光束折回去。",
+      "theme": "投影与折射",
+      "playstyle": "先定下光域，再等一束垂光。",
+      "color": "#C5AA64",
+      "playable": true,
+      "canDefend": true,
+      "hp": 1000,
+      "attack": 100,
+      "speed": 4,
+      "hurtWidth": 1,
+      "hurtDepth": 0.5,
+      "basic": [
+        "sacred.n1",
+        "sacred.n2",
+        "sacred.n3"
+      ],
+      "s1": "sacred.s1",
+      "s2": "sacred.s2",
+      "ult": "sacred.ult",
+      "passive": "sacred.passive",
+      "asset": "echo.prism.portrait",
+      "ai": "sacred",
+      "presentation": "atlas",
+      "animation": "sacred"
+    },
+    "courier": {
+      "id": "courier",
+      "name": "折轨梭",
+      "role": "定点突进",
+      "description": "一张废弃的线路图把自己叠成机器。它在擂台上铺设落点，冲过去以后才想起该问乘客的目的地。",
+      "theme": "折纸与滑轨",
+      "playstyle": "沿着折痕把落点钉在地上，再沿轨线冲刺；提前收翅可以在途中进攻。",
+      "color": "#DDAA43",
+      "playable": true,
+      "canDefend": true,
+      "hp": 1000,
+      "attack": 100,
+      "speed": 4,
+      "hurtWidth": 1,
+      "hurtDepth": 0.5,
+      "basic": [
+        "courier.n1",
+        "courier.n2",
+        "courier.n3"
+      ],
+      "s1": "courier.s1",
+      "s2": "courier.s2",
+      "ult": "courier.ult",
+      "passive": "courier.passive",
+      "asset": "echo.glider.portrait",
+      "ai": "courier",
+      "presentation": "atlas",
+      "animation": "courier"
+    },
+    "nailong": {
+      "id": "nailong",
+      "name": "炉腹陶",
+      "theme": "风箱与炉火",
+      "role": "蓄热强攻",
+      "description": "被搬出窑房的陶炉给自己接了一双风箱脚。炉火升起来时，整只炉身就成了能移动的冲锤。",
+      "playstyle": "抓住空当添炭，再用强化冲撞贴住对手。",
+      "presentation": "atlas",
+      "playable": true,
+      "canDefend": true,
+      "hp": 1000,
+      "attack": 100,
+      "speed": 4,
+      "hurtWidth": 1,
+      "hurtDepth": 0.5,
+      "basic": [
+        "nailong.n1",
+        "nailong.n2",
+        "nailong.n3"
+      ],
+      "s1": "nailong.s1",
+      "s2": "nailong.s2",
+      "ult": "nailong.ult",
+      "passive": "nailong.passive",
+      "asset": "echo.kiln.portrait",
+      "ai": "nailong",
+      "animation": "nailong"
+    },
+    "doubao": {
+      "id": "doubao",
+      "name": "沫泡潜钟",
+      "theme": "气压与延迟引爆",
+      "role": "中距控场",
+      "description": "废船坞的潜水钟把漏气的毛病练成了本事。它能用一枚小泡试出水压，再把下一串气泡留在对手脚边。",
+      "playstyle": "先放延时泡阵，再用直线气泡封住退路。",
+      "metadata": {
+        "sourceName": "沫泡潜钟",
+        "sourceVersion": "T07-web.1"
+      },
+      "presentation": "procedural",
+      "playable": true,
+      "canDefend": true,
+      "hp": 1000,
+      "attack": 100,
+      "speed": 4,
+      "hurtWidth": 1,
+      "hurtDepth": 0.5,
+      "basic": [
+        "doubao.n1",
+        "doubao.n2",
+        "doubao.n3"
+      ],
+      "s1": "doubao.s1",
+      "s2": "doubao.s2",
+      "ult": "doubao.ult",
+      "passive": "doubao.passive",
+      "asset": "echo.bell.portrait",
+      "ai": "doubao"
     }
   },
   "skills": {
@@ -450,6 +650,737 @@
         "lifetime": 90,
         "offset": 0.5
       }
+    },
+    "melancholy.n1": {
+      "id": "melancholy.n1",
+      "name": "试拍点刺",
+      "kind": "basic",
+      "description": "前两段命中后可衔接下一段或普通技能，第三段以旋盘横扫击推开目标。",
+      "startup": 8,
+      "active": 3,
+      "recovery": 10,
+      "cd": 0,
+      "cost": 0,
+      "coeff": 0.25,
+      "stun": 18,
+      "knockback": 0.08,
+      "knockdown": false,
+      "effect": {
+        "type": "melee",
+        "length": 1.1,
+        "depth": 0.7
+      }
+    },
+    "melancholy.n2": {
+      "id": "melancholy.n2",
+      "name": "反摆敲击",
+      "kind": "basic",
+      "description": "前两段命中后可衔接下一段或普通技能，第三段以旋盘横扫击推开目标。",
+      "startup": 9,
+      "active": 3,
+      "recovery": 12,
+      "cd": 0,
+      "cost": 0,
+      "coeff": 0.35,
+      "stun": 20,
+      "knockback": 0.1,
+      "knockdown": false,
+      "effect": {
+        "type": "melee",
+        "length": 1.2,
+        "depth": 0.7
+      }
+    },
+    "melancholy.n3": {
+      "id": "melancholy.n3",
+      "name": "旋盘横扫",
+      "kind": "basic",
+      "description": "前两段命中后可衔接下一段或普通技能，第三段以旋盘横扫击推开目标。",
+      "startup": 12,
+      "active": 4,
+      "recovery": 20,
+      "cd": 0,
+      "cost": 0,
+      "coeff": 0.6,
+      "stun": 24,
+      "knockback": 0.65,
+      "knockdown": false,
+      "effect": {
+        "type": "melee",
+        "length": 1.4,
+        "depth": 0.8
+      }
+    },
+    "melancholy.s1": {
+      "id": "melancholy.s1",
+      "name": "回身慢步",
+      "kind": "skill",
+      "description": "向起手朝向的反方向退 0.9 U。全程可受击，依靠实际距离避开攻击；受击硬直中无法使用。",
+      "startup": 6,
+      "active": 12,
+      "recovery": 16,
+      "cd": 420,
+      "cost": 0,
+      "coeff": 0,
+      "stun": 0,
+      "knockback": 0,
+      "knockdown": false,
+      "effect": {
+        "type": "backstep",
+        "distance": 0.9
+      }
+    },
+    "melancholy.s2": {
+      "id": "melancholy.s2",
+      "name": "落拍回旋",
+      "kind": "skill",
+      "description": "前方半圆半径 1.35 U，单次命中。合法起手落在拍点前后 4 帧内时，本次伤害提高至 145。",
+      "startup": 18,
+      "active": 4,
+      "recovery": 22,
+      "cd": 540,
+      "cost": 0,
+      "coeff": 1.2,
+      "stun": 30,
+      "knockback": 0.25,
+      "knockdown": false,
+      "effect": {
+        "type": "semicircle",
+        "radius": 1.35
+      }
+    },
+    "melancholy.ult": {
+      "id": "melancholy.ult",
+      "name": "整点独舞",
+      "kind": "ult",
+      "description": "连续舞步后完成一次前方 2.4 × 1.4 U 的终结扫击并击倒；演出多姿态共用一次判定。",
+      "startup": 48,
+      "active": 6,
+      "recovery": 30,
+      "cd": 0,
+      "cost": 100,
+      "coeff": 2.45,
+      "stun": 0,
+      "knockback": 0,
+      "knockdown": true,
+      "effect": {
+        "type": "melee",
+        "length": 2.4,
+        "depth": 1.4
+      }
+    },
+    "laughing.n1": {
+      "id": "laughing.n1",
+      "name": "鼓边轻点",
+      "kind": "basic",
+      "description": "先点鼓边，再回身敲击，最后以绷面回弹把目标推开。前两段命中后可衔接下一段或普通技能。",
+      "startup": 8,
+      "active": 3,
+      "recovery": 10,
+      "cd": 0,
+      "cost": 0,
+      "coeff": 0.3,
+      "stun": 18,
+      "knockback": 0.08,
+      "knockdown": false,
+      "effect": {
+        "type": "melee",
+        "length": 1.1,
+        "depth": 0.7
+      }
+    },
+    "laughing.n2": {
+      "id": "laughing.n2",
+      "name": "反拍双击",
+      "kind": "basic",
+      "description": "先点鼓边，再回身敲击，最后以绷面回弹把目标推开。前两段命中后可衔接下一段或普通技能。",
+      "startup": 9,
+      "active": 3,
+      "recovery": 12,
+      "cd": 0,
+      "cost": 0,
+      "coeff": 0.4,
+      "stun": 20,
+      "knockback": 0.1,
+      "knockdown": false,
+      "effect": {
+        "type": "melee",
+        "length": 1.2,
+        "depth": 0.7
+      }
+    },
+    "laughing.n3": {
+      "id": "laughing.n3",
+      "name": "绷面回弹",
+      "kind": "basic",
+      "description": "先点鼓边，再回身敲击，最后以绷面回弹把目标推开。前两段命中后可衔接下一段或普通技能。",
+      "startup": 11,
+      "active": 4,
+      "recovery": 20,
+      "cd": 0,
+      "cost": 0,
+      "coeff": 0.65,
+      "stun": 24,
+      "knockback": 0.65,
+      "knockdown": false,
+      "effect": {
+        "type": "melee",
+        "length": 1.4,
+        "depth": 0.8
+      }
+    },
+    "laughing.s1": {
+      "id": "laughing.s1",
+      "name": "鼓腹震波",
+      "kind": "skill",
+      "description": "自身半径 1.25 U 单次震波。合法起手时消耗余振，本次半径扩大至 1.6 U，伤害提高至 140。",
+      "startup": 14,
+      "active": 4,
+      "recovery": 20,
+      "cd": 480,
+      "cost": 0,
+      "coeff": 1.1,
+      "stun": 30,
+      "knockback": 0.3,
+      "knockdown": false,
+      "effect": {
+        "type": "circle",
+        "radius": 1.25,
+        "offset": 0
+      }
+    },
+    "laughing.s2": {
+      "id": "laughing.s2",
+      "name": "弹簧跳击",
+      "kind": "skill",
+      "description": "向前跃进 1.8 U，落地在半径 0.9 U 内造成一次伤害。跳跃全程可受击，不提供无敌或空中免伤。",
+      "startup": 24,
+      "active": 4,
+      "recovery": 22,
+      "cd": 600,
+      "cost": 0,
+      "coeff": 1.3,
+      "stun": 30,
+      "knockback": 0.2,
+      "knockdown": false,
+      "effect": {
+        "type": "leap",
+        "offset": 1.8,
+        "radius": 0.9,
+        "moveFrames": 16,
+        "landAtBody": true
+      }
+    },
+    "laughing.ult": {
+      "id": "laughing.ult",
+      "name": "满场齐鸣",
+      "kind": "ult",
+      "description": "原地蓄势鼓鸣，发出半径 2.2 U 的范围震波并击倒。三圈波纹只结算一次伤害，蓄势可被打断。",
+      "startup": 42,
+      "active": 6,
+      "recovery": 30,
+      "cd": 0,
+      "cost": 100,
+      "coeff": 2.6,
+      "stun": 0,
+      "knockback": 0,
+      "knockdown": true,
+      "effect": {
+        "type": "circle",
+        "radius": 2.2,
+        "offset": 0
+      }
+    },
+    "sacred.n1": {
+      "id": "sacred.n1",
+      "name": "点灯推击",
+      "kind": "basic",
+      "description": "近身棱镜三连，前两段命中后可衔接下一段或普通技能，第三段推开目标。",
+      "startup": 8,
+      "active": 3,
+      "recovery": 10,
+      "cd": 0,
+      "cost": 0,
+      "coeff": 0.25,
+      "stun": 18,
+      "knockback": 0.08,
+      "knockdown": false,
+      "effect": {
+        "type": "melee",
+        "length": 1.1,
+        "depth": 0.7
+      }
+    },
+    "sacred.n2": {
+      "id": "sacred.n2",
+      "name": "双棱合击",
+      "kind": "basic",
+      "description": "近身棱镜三连，前两段命中后可衔接下一段或普通技能，第三段推开目标。",
+      "startup": 10,
+      "active": 3,
+      "recovery": 12,
+      "cd": 0,
+      "cost": 0,
+      "coeff": 0.35,
+      "stun": 20,
+      "knockback": 0.1,
+      "knockdown": false,
+      "effect": {
+        "type": "melee",
+        "length": 1.2,
+        "depth": 0.7
+      }
+    },
+    "sacred.n3": {
+      "id": "sacred.n3",
+      "name": "棱面外展",
+      "kind": "basic",
+      "description": "近身棱镜三连，前两段命中后可衔接下一段或普通技能，第三段推开目标。",
+      "startup": 12,
+      "active": 4,
+      "recovery": 20,
+      "cd": 0,
+      "cost": 0,
+      "coeff": 0.7,
+      "stun": 24,
+      "knockback": 0.7,
+      "knockdown": false,
+      "effect": {
+        "type": "melee",
+        "length": 1.4,
+        "depth": 0.8
+      }
+    },
+    "sacred.s1": {
+      "id": "sacred.s1",
+      "name": "静光领域",
+      "kind": "skill",
+      "description": "在前方 1.5 U 生成半径 1.1 U 光环，持续 2 秒。环内敌人普通移速乘 0.75，离场解除，不影响闪避或技能位移。",
+      "startup": 18,
+      "active": 1,
+      "recovery": 21,
+      "cd": 600,
+      "cost": 0,
+      "coeff": 0,
+      "stun": 0,
+      "knockback": 0,
+      "knockdown": false,
+      "effect": {
+        "type": "field",
+        "offset": 1.5,
+        "radius": 1.1,
+        "life": 120,
+        "slow": 0.75
+      }
+    },
+    "sacred.s2": {
+      "id": "sacred.s2",
+      "name": "垂光落点",
+      "kind": "skill",
+      "description": "起手锁定前方 2 U 落点，以半径 0.9 U 攻击一次。蓄势全程显示预警且可被打断。",
+      "startup": 42,
+      "active": 4,
+      "recovery": 24,
+      "cd": 660,
+      "cost": 0,
+      "coeff": 1.5,
+      "stun": 32,
+      "knockback": 0.3,
+      "knockdown": false,
+      "effect": {
+        "type": "circle",
+        "radius": 0.9,
+        "offset": 2
+      }
+    },
+    "sacred.ult": {
+      "id": "sacred.ult",
+      "name": "光域降临",
+      "kind": "ult",
+      "description": "起手锁定前方 1 U 中心，释放半径 2.2 U 的一次范围攻击并击倒；光效不产生追加命中。",
+      "startup": 54,
+      "active": 6,
+      "recovery": 30,
+      "cd": 0,
+      "cost": 100,
+      "coeff": 2.7,
+      "stun": 0,
+      "knockback": 0,
+      "knockdown": true,
+      "effect": {
+        "type": "circle",
+        "radius": 2.2,
+        "offset": 1
+      }
+    },
+    "courier.n1": {
+      "id": "courier.n1",
+      "name": "折翼前探",
+      "kind": "basic",
+      "description": "折翼前探，翻翼横扫，再用梭身弹开目标，最后一击推开对手。前两段命中后可衔接下一段或普通技能。",
+      "startup": 8,
+      "active": 3,
+      "recovery": 10,
+      "cd": 0,
+      "cost": 0,
+      "coeff": 0.3,
+      "stun": 18,
+      "knockback": 0.08,
+      "knockdown": false,
+      "effect": {
+        "type": "melee",
+        "length": 1.1,
+        "depth": 0.7
+      }
+    },
+    "courier.n2": {
+      "id": "courier.n2",
+      "name": "翻翼横扫",
+      "kind": "basic",
+      "description": "折翼前探，翻翼横扫，再用梭身弹开目标，最后一击推开对手。前两段命中后可衔接下一段或普通技能。",
+      "startup": 9,
+      "active": 3,
+      "recovery": 12,
+      "cd": 0,
+      "cost": 0,
+      "coeff": 0.4,
+      "stun": 20,
+      "knockback": 0.1,
+      "knockdown": false,
+      "effect": {
+        "type": "melee",
+        "length": 1.2,
+        "depth": 0.7
+      }
+    },
+    "courier.n3": {
+      "id": "courier.n3",
+      "name": "梭身弹击",
+      "kind": "basic",
+      "description": "折翼前探，翻翼横扫，再用梭身弹开目标，最后一击推开对手。前两段命中后可衔接下一段或普通技能。",
+      "startup": 12,
+      "active": 4,
+      "recovery": 20,
+      "cd": 0,
+      "cost": 0,
+      "coeff": 0.7,
+      "stun": 24,
+      "knockback": 0.65,
+      "knockdown": false,
+      "effect": {
+        "type": "melee",
+        "length": 1.4,
+        "depth": 0.8
+      }
+    },
+    "courier.s1": {
+      "id": "courier.s1",
+      "name": "落点标记",
+      "kind": "skill",
+      "description": "在前方 2.4 U 放置一个终点标记，持续 4 秒。标记不追踪敌人，不造成伤害，最多保留一个。",
+      "startup": 12,
+      "active": 1,
+      "recovery": 17,
+      "cd": 540,
+      "cost": 0,
+      "coeff": 0,
+      "stun": 0,
+      "knockback": 0,
+      "knockdown": false,
+      "effect": {
+        "type": "marker",
+        "offset": 2.4,
+        "life": 240
+      }
+    },
+    "courier.s2": {
+      "id": "courier.s2",
+      "name": "展翼突进",
+      "kind": "skill",
+      "description": "默认向前前冲 1.5 U，有效标记可锁定最远 2.4 U 终点。前冲时再次输入可提前收势并攻击，半径 0.95 U，全程可受击。",
+      "startup": 12,
+      "active": 4,
+      "recovery": 22,
+      "cd": 600,
+      "cost": 0,
+      "coeff": 1.3,
+      "stun": 28,
+      "knockback": 0.35,
+      "knockdown": false,
+      "effect": {
+        "type": "slide",
+        "distance": 1.5,
+        "maxDistance": 2.4,
+        "slideFrames": 12,
+        "radius": 0.95
+      }
+    },
+    "courier.ult": {
+      "id": "courier.ult",
+      "name": "飞轨重落",
+      "kind": "ult",
+      "description": "前摇末 12 帧向前前冲 2.5 U，在终点半径 1.35 U 内攻击一次并击倒。起手显示预警，移动不提供无敌。",
+      "startup": 36,
+      "active": 6,
+      "recovery": 30,
+      "cd": 0,
+      "cost": 100,
+      "coeff": 2.5,
+      "stun": 0,
+      "knockback": 0,
+      "knockdown": true,
+      "effect": {
+        "type": "leap",
+        "offset": 2.5,
+        "radius": 1.35,
+        "moveFrames": 12,
+        "landAtBody": true
+      }
+    },
+    "nailong.n1": {
+      "id": "nailong.n1",
+      "name": "风门前推",
+      "kind": "basic",
+      "description": "前两段命中后可衔接下一段或普通技能，第三段将目标推开。",
+      "startup": 7,
+      "active": 3,
+      "recovery": 10,
+      "cd": 0,
+      "cost": 0,
+      "coeff": 0.35,
+      "stun": 18,
+      "knockback": 0.08,
+      "knockdown": false,
+      "effect": {
+        "type": "melee",
+        "length": 1.1,
+        "depth": 0.7
+      }
+    },
+    "nailong.n2": {
+      "id": "nailong.n2",
+      "name": "炉膛轻顶",
+      "kind": "basic",
+      "description": "前两段命中后可衔接下一段或普通技能，第三段将目标推开。",
+      "startup": 8,
+      "active": 3,
+      "recovery": 12,
+      "cd": 0,
+      "cost": 0,
+      "coeff": 0.45,
+      "stun": 20,
+      "knockback": 0.1,
+      "knockdown": false,
+      "effect": {
+        "type": "melee",
+        "length": 1.2,
+        "depth": 0.7
+      }
+    },
+    "nailong.n3": {
+      "id": "nailong.n3",
+      "name": "转身重推",
+      "kind": "basic",
+      "description": "前两段命中后可衔接下一段或普通技能，第三段将目标推开。",
+      "startup": 11,
+      "active": 4,
+      "recovery": 20,
+      "cd": 0,
+      "cost": 0,
+      "coeff": 0.7,
+      "stun": 24,
+      "knockback": 0.7,
+      "knockdown": false,
+      "effect": {
+        "type": "melee",
+        "length": 1.4,
+        "depth": 0.8
+      }
+    },
+    "nailong.s1": {
+      "id": "nailong.s1",
+      "name": "炉膛冲撞",
+      "kind": "skill",
+      "description": "向前冲撞 1.5 U。同一目标命中一次；释放时消耗炽热，锁定强化伤害。",
+      "startup": 10,
+      "active": 4,
+      "recovery": 18,
+      "cd": 480,
+      "cost": 0,
+      "coeff": 1.3,
+      "stun": 32,
+      "knockback": 0.2,
+      "knockdown": false,
+      "effect": {
+        "type": "dash",
+        "length": 1.2,
+        "depth": 0.8,
+        "distance": 1.5
+      }
+    },
+    "nailong.s2": {
+      "id": "nailong.s2",
+      "name": "添炭蓄热",
+      "kind": "skill",
+      "description": "获得持续 8 秒的炽热，最多 1 层。获得状态前受击会中断添炭，冷却保留。",
+      "startup": 30,
+      "active": 1,
+      "recovery": 17,
+      "cd": 720,
+      "cost": 0,
+      "coeff": 0,
+      "stun": 0,
+      "knockback": 0,
+      "knockdown": false,
+      "effect": {
+        "type": "feed"
+      }
+    },
+    "nailong.ult": {
+      "id": "nailong.ult",
+      "name": "开炉重落",
+      "kind": "ult",
+      "description": "扑向起手锁定的前方落点，落地造成一次范围伤害并击倒；预警期间可以避开或打断。",
+      "startup": 36,
+      "active": 4,
+      "recovery": 30,
+      "cd": 0,
+      "cost": 100,
+      "coeff": 2.4,
+      "stun": 0,
+      "knockback": 0,
+      "knockdown": true,
+      "effect": {
+        "type": "leap",
+        "offset": 1.5,
+        "radius": 1.35,
+        "moveFrames": 12,
+        "landAtBody": true
+      }
+    },
+    "doubao.n1": {
+      "id": "doubao.n1",
+      "name": "探针轻点",
+      "kind": "basic",
+      "description": "以轻巧探针完成近身三连，第三段的小波纹为近战表现，命中后将目标推开。",
+      "startup": 8,
+      "active": 3,
+      "recovery": 10,
+      "cd": 0,
+      "cost": 0,
+      "coeff": 0.3,
+      "stun": 18,
+      "knockback": 0.08,
+      "knockdown": false,
+      "effect": {
+        "type": "melee",
+        "length": 1.1,
+        "depth": 0.7
+      }
+    },
+    "doubao.n2": {
+      "id": "doubao.n2",
+      "name": "阀盖推击",
+      "kind": "basic",
+      "description": "以轻巧探针完成近身三连，第三段的小波纹为近战表现，命中后将目标推开。",
+      "startup": 9,
+      "active": 3,
+      "recovery": 12,
+      "cd": 0,
+      "cost": 0,
+      "coeff": 0.4,
+      "stun": 20,
+      "knockback": 0.1,
+      "knockdown": false,
+      "effect": {
+        "type": "melee",
+        "length": 1.2,
+        "depth": 0.7
+      }
+    },
+    "doubao.n3": {
+      "id": "doubao.n3",
+      "name": "开阀送波",
+      "kind": "basic",
+      "description": "以轻巧探针完成近身三连，第三段的小波纹为近战表现，命中后将目标推开。",
+      "startup": 12,
+      "active": 4,
+      "recovery": 20,
+      "cd": 0,
+      "cost": 0,
+      "coeff": 0.65,
+      "stun": 24,
+      "knockback": 0.65,
+      "knockdown": false,
+      "effect": {
+        "type": "melee",
+        "length": 1.4,
+        "depth": 0.8
+      }
+    },
+    "doubao.s1": {
+      "id": "doubao.s1",
+      "name": "弹幕气泡",
+      "kind": "skill",
+      "description": "向前发射一枚气泡，速度 6 U/秒、寿命 1 秒，命中首个有效目标后消失。",
+      "startup": 12,
+      "active": 1,
+      "recovery": 18,
+      "cd": 420,
+      "cost": 0,
+      "coeff": 1.1,
+      "stun": 26,
+      "knockback": 0.25,
+      "knockdown": false,
+      "effect": {
+        "type": "projectile",
+        "offset": 0.5,
+        "diameter": 0.55,
+        "speed": 6,
+        "lifetime": 60
+      }
+    },
+    "doubao.s2": {
+      "id": "doubao.s2",
+      "name": "延时泡阵",
+      "kind": "skill",
+      "description": "在前方 2 U 留下预警标记，生成后等待 36 帧，发动一次半径 0.9 U 的区域攻击。",
+      "startup": 12,
+      "active": 1,
+      "recovery": 20,
+      "cd": 660,
+      "cost": 0,
+      "coeff": 1.3,
+      "stun": 30,
+      "knockback": 0.3,
+      "knockdown": false,
+      "effect": {
+        "type": "delayed",
+        "offset": 2,
+        "delay": 36,
+        "radius": 0.9,
+        "warnOnSpawnOnly": true
+      }
+    },
+    "doubao.ult": {
+      "id": "doubao.ult",
+      "name": "满舱释压",
+      "kind": "ult",
+      "description": "将聚拢的气泡化作前方宽幅释压波，单次命中并击倒，起手显示完整攻击区域。",
+      "startup": 42,
+      "active": 4,
+      "recovery": 30,
+      "cd": 0,
+      "cost": 100,
+      "coeff": 2.5,
+      "stun": 0,
+      "knockback": 0,
+      "knockdown": true,
+      "effect": {
+        "type": "melee",
+        "length": 3.6,
+        "depth": 1.5
+      }
     }
   },
   "passives": {
@@ -469,6 +1400,65 @@
       "type": "fullChargeSpeed",
       "skill": "cloud.s1",
       "multiplier": 1.15
+    },
+    "melancholy.passive": {
+      "id": "melancholy.passive",
+      "name": "校时拍点",
+      "description": "节拍只提高落拍回旋伤害，不改变前后摇、硬直或冷却。无效输入不预存强化，被打断时本次强化结束。",
+      "type": "beat",
+      "skill": "melancholy.s2",
+      "period": 60,
+      "window": 4,
+      "bonusCoeff": 0.25
+    },
+    "laughing.passive": {
+      "id": "laughing.passive",
+      "name": "鼓腔共振",
+      "description": "弹簧跳击有效命中后获得余振，下次合法鼓腹震波起手时消耗并强化。最多 1 层，空放或中断不返还。",
+      "type": "mirth",
+      "skill": "laughing.s1",
+      "grantSkill": "laughing.s2",
+      "duration": 240,
+      "bonusCoeff": 0.3,
+      "boostRadius": 1.6
+    },
+    "sacred.passive": {
+      "id": "sacred.passive",
+      "name": "环光共鸣",
+      "description": "垂光落点实际命中时，目标地面中心仍在自身有效光环内则伤害为 180。不增加命中次数，不强化奥义。",
+      "type": "resonance",
+      "skill": "sacred.s2",
+      "fieldSkill": "sacred.s1",
+      "bonusCoeff": 0.3
+    },
+    "courier.passive": {
+      "id": "courier.passive",
+      "name": "落点回响",
+      "description": "消耗标记、到达原落点且命中时，技能一剩余冷却减少 1 秒。提前收势、空放或被打断均不触发。",
+      "type": "arrival",
+      "skill": "courier.s2",
+      "reduceSlot": "s1",
+      "reduceFrames": 60
+    },
+    "nailong.passive": {
+      "id": "nailong.passive",
+      "name": "窑火正盛",
+      "description": "移动速度由 4 提高至 4.4 U/秒。炽热消耗或到期时恢复基础速度。",
+      "type": "fed",
+      "skill": "nailong.s1",
+      "grantSkill": "nailong.s2",
+      "duration": 480,
+      "speedMultiplier": 1.1,
+      "bonusCoeff": 0.3
+    },
+    "doubao.passive": {
+      "id": "doubao.passive",
+      "name": "气阀回流",
+      "description": "弹幕气泡命中后，技能2剩余冷却减少 1 秒，最低减至 0。",
+      "type": "hitRefund",
+      "skill": "doubao.s1",
+      "reduceSlot": "s2",
+      "reduceFrames": 60
     }
   },
   "stages": {
@@ -482,7 +1472,7 @@
             "characterId": "melee",
             "hp": 180,
             "attack": 100,
-            "x": 11.8,
+            "x": 11,
             "y": 2.4
           }
         ],
@@ -491,14 +1481,14 @@
             "characterId": "ranged",
             "hp": 140,
             "attack": 100,
-            "x": 13.0,
+            "x": 13,
             "y": 3.6
           }
         ]
       ],
       "firstReward": 50,
       "repeatReward": 20,
-      "unlockCharacter": "cloud",
+      "unlockCharacter": null,
       "unlockStage": "stage_02"
     },
     "stage_02": {
@@ -511,14 +1501,14 @@
             "characterId": "melee",
             "hp": 240,
             "attack": 100,
-            "x": 11.5,
+            "x": 11,
             "y": 2
           },
           {
             "characterId": "melee",
             "hp": 240,
             "attack": 100,
-            "x": 13,
+            "x": 12.5,
             "y": 4
           }
         ],
@@ -547,14 +1537,14 @@
     "stage_03": {
       "id": "stage_03",
       "name": "回声擂台",
-      "description": "挑战训练型慢团团，沿着地面预警判断蓄力弹与延迟攻击。",
+      "description": "挑战训练型棱灯司。避开地面光环，留心蓄势落点的预警。",
       "waves": [
         [
           {
-            "characterId": "cloud",
+            "characterId": "sacred",
             "hp": 1200,
             "attack": 100,
-            "x": 12.8,
+            "x": 11,
             "y": 3.3
           }
         ]
@@ -587,6 +1577,30 @@
     "ranged": {
       "keepMin": 3,
       "keepMax": 5
+    },
+    "melancholy": {
+      "meleeRange": 1.1,
+      "approachRange": 1.1
+    },
+    "laughing": {
+      "meleeRange": 1.1,
+      "approachRange": 1.8
+    },
+    "sacred": {
+      "meleeRange": 1.1,
+      "approachRange": 1.8
+    },
+    "courier": {
+      "meleeRange": 1.1,
+      "approachRange": 2.4
+    },
+    "nailong": {
+      "meleeRange": 1.1,
+      "approachRange": 2
+    },
+    "doubao": {
+      "meleeRange": 1.1,
+      "approachRange": 3
     }
   },
   "spawn": {
@@ -594,13 +1608,13 @@
     "warningFrames": 60,
     "minDistance": 3,
     "maxPerWave": 2,
-    "playerX": 3.2,
+    "playerX": 6,
     "playerY": 3,
-    "opponentX": 12.8,
+    "opponentX": 10,
     "opponentY": 3
   },
   "economy": {
-    "initialCharacter": "shell",
+    "initialCharacter": "melancholy",
     "initialStage": "stage_01",
     "levelCosts": [
       50,
@@ -608,7 +1622,15 @@
       150,
       200
     ],
-    "growthRate": 0.04
+    "growthRate": 0.04,
+    "initialCharacters": [
+      "melancholy",
+      "laughing",
+      "sacred",
+      "courier",
+      "nailong",
+      "doubao"
+    ]
   },
   "input": {
     "p1": {
@@ -766,10 +1788,351 @@
       "realPersonCheck": "空场景图，未见真人肖像。",
       "ipCheck": "人工检查画面，未见现有 IP 角色、文字或标志。",
       "status": "prototype"
+    },
+    "echo.pendulum.portrait": {
+      "id": "echo.pendulum.portrait",
+      "path": "./assets/echo-crew/pendulum/portrait.svg",
+      "use": "蓝摆针 · 角色立绘",
+      "author": "回声练习场项目组",
+      "source": "为 T07 网页版独立绘制的机械角色矢量图。",
+      "license": "本项目原创网页版试玩素材。",
+      "realPersonCheck": "无真人姓名、肖像或声音。",
+      "ipCheck": "以乐器、灯具、折纸或工业器具构造角色，独立设计外形。",
+      "status": "web-prototype"
+    },
+    "echo.pendulum.A": {
+      "id": "echo.pendulum.A",
+      "path": "./assets/echo-crew/pendulum/A.svg",
+      "use": "蓝摆针 · 动作图集 A",
+      "author": "回声练习场项目组",
+      "source": "为 T07 网页版独立绘制的机械角色矢量图。",
+      "license": "本项目原创网页版试玩素材。",
+      "realPersonCheck": "无真人姓名、肖像或声音。",
+      "ipCheck": "以乐器、灯具、折纸或工业器具构造角色，独立设计外形。",
+      "status": "web-prototype"
+    },
+    "echo.pendulum.B": {
+      "id": "echo.pendulum.B",
+      "path": "./assets/echo-crew/pendulum/B.svg",
+      "use": "蓝摆针 · 动作图集 B",
+      "author": "回声练习场项目组",
+      "source": "为 T07 网页版独立绘制的机械角色矢量图。",
+      "license": "本项目原创网页版试玩素材。",
+      "realPersonCheck": "无真人姓名、肖像或声音。",
+      "ipCheck": "以乐器、灯具、折纸或工业器具构造角色，独立设计外形。",
+      "status": "web-prototype"
+    },
+    "echo.pendulum.C": {
+      "id": "echo.pendulum.C",
+      "path": "./assets/echo-crew/pendulum/C.svg",
+      "use": "蓝摆针 · 动作图集 C",
+      "author": "回声练习场项目组",
+      "source": "为 T07 网页版独立绘制的机械角色矢量图。",
+      "license": "本项目原创网页版试玩素材。",
+      "realPersonCheck": "无真人姓名、肖像或声音。",
+      "ipCheck": "以乐器、灯具、折纸或工业器具构造角色，独立设计外形。",
+      "status": "web-prototype"
+    },
+    "echo.pendulum.D": {
+      "id": "echo.pendulum.D",
+      "path": "./assets/echo-crew/pendulum/D.svg",
+      "use": "蓝摆针 · 动作图集 D",
+      "author": "回声练习场项目组",
+      "source": "为 T07 网页版独立绘制的机械角色矢量图。",
+      "license": "本项目原创网页版试玩素材。",
+      "realPersonCheck": "无真人姓名、肖像或声音。",
+      "ipCheck": "以乐器、灯具、折纸或工业器具构造角色，独立设计外形。",
+      "status": "web-prototype"
+    },
+    "echo.pendulum.E": {
+      "id": "echo.pendulum.E",
+      "path": "./assets/echo-crew/pendulum/E.svg",
+      "use": "蓝摆针 · 动作图集 E",
+      "author": "回声练习场项目组",
+      "source": "为 T07 网页版独立绘制的机械角色矢量图。",
+      "license": "本项目原创网页版试玩素材。",
+      "realPersonCheck": "无真人姓名、肖像或声音。",
+      "ipCheck": "以乐器、灯具、折纸或工业器具构造角色，独立设计外形。",
+      "status": "web-prototype"
+    },
+    "echo.drum.portrait": {
+      "id": "echo.drum.portrait",
+      "path": "./assets/echo-crew/drum/portrait.svg",
+      "use": "簧鼓咚 · 角色立绘",
+      "author": "回声练习场项目组",
+      "source": "为 T07 网页版独立绘制的机械角色矢量图。",
+      "license": "本项目原创网页版试玩素材。",
+      "realPersonCheck": "无真人姓名、肖像或声音。",
+      "ipCheck": "以乐器、灯具、折纸或工业器具构造角色，独立设计外形。",
+      "status": "web-prototype"
+    },
+    "echo.drum.A": {
+      "id": "echo.drum.A",
+      "path": "./assets/echo-crew/drum/A.svg",
+      "use": "簧鼓咚 · 动作图集 A",
+      "author": "回声练习场项目组",
+      "source": "为 T07 网页版独立绘制的机械角色矢量图。",
+      "license": "本项目原创网页版试玩素材。",
+      "realPersonCheck": "无真人姓名、肖像或声音。",
+      "ipCheck": "以乐器、灯具、折纸或工业器具构造角色，独立设计外形。",
+      "status": "web-prototype"
+    },
+    "echo.drum.B": {
+      "id": "echo.drum.B",
+      "path": "./assets/echo-crew/drum/B.svg",
+      "use": "簧鼓咚 · 动作图集 B",
+      "author": "回声练习场项目组",
+      "source": "为 T07 网页版独立绘制的机械角色矢量图。",
+      "license": "本项目原创网页版试玩素材。",
+      "realPersonCheck": "无真人姓名、肖像或声音。",
+      "ipCheck": "以乐器、灯具、折纸或工业器具构造角色，独立设计外形。",
+      "status": "web-prototype"
+    },
+    "echo.drum.C": {
+      "id": "echo.drum.C",
+      "path": "./assets/echo-crew/drum/C.svg",
+      "use": "簧鼓咚 · 动作图集 C",
+      "author": "回声练习场项目组",
+      "source": "为 T07 网页版独立绘制的机械角色矢量图。",
+      "license": "本项目原创网页版试玩素材。",
+      "realPersonCheck": "无真人姓名、肖像或声音。",
+      "ipCheck": "以乐器、灯具、折纸或工业器具构造角色，独立设计外形。",
+      "status": "web-prototype"
+    },
+    "echo.drum.D": {
+      "id": "echo.drum.D",
+      "path": "./assets/echo-crew/drum/D.svg",
+      "use": "簧鼓咚 · 动作图集 D",
+      "author": "回声练习场项目组",
+      "source": "为 T07 网页版独立绘制的机械角色矢量图。",
+      "license": "本项目原创网页版试玩素材。",
+      "realPersonCheck": "无真人姓名、肖像或声音。",
+      "ipCheck": "以乐器、灯具、折纸或工业器具构造角色，独立设计外形。",
+      "status": "web-prototype"
+    },
+    "echo.drum.E": {
+      "id": "echo.drum.E",
+      "path": "./assets/echo-crew/drum/E.svg",
+      "use": "簧鼓咚 · 动作图集 E",
+      "author": "回声练习场项目组",
+      "source": "为 T07 网页版独立绘制的机械角色矢量图。",
+      "license": "本项目原创网页版试玩素材。",
+      "realPersonCheck": "无真人姓名、肖像或声音。",
+      "ipCheck": "以乐器、灯具、折纸或工业器具构造角色，独立设计外形。",
+      "status": "web-prototype"
+    },
+    "echo.prism.portrait": {
+      "id": "echo.prism.portrait",
+      "path": "./assets/echo-crew/prism/portrait.svg",
+      "use": "棱灯司 · 角色立绘",
+      "author": "回声练习场项目组",
+      "source": "为 T07 网页版独立绘制的机械角色矢量图。",
+      "license": "本项目原创网页版试玩素材。",
+      "realPersonCheck": "无真人姓名、肖像或声音。",
+      "ipCheck": "以乐器、灯具、折纸或工业器具构造角色，独立设计外形。",
+      "status": "web-prototype"
+    },
+    "echo.prism.A": {
+      "id": "echo.prism.A",
+      "path": "./assets/echo-crew/prism/A.svg",
+      "use": "棱灯司 · 动作图集 A",
+      "author": "回声练习场项目组",
+      "source": "为 T07 网页版独立绘制的机械角色矢量图。",
+      "license": "本项目原创网页版试玩素材。",
+      "realPersonCheck": "无真人姓名、肖像或声音。",
+      "ipCheck": "以乐器、灯具、折纸或工业器具构造角色，独立设计外形。",
+      "status": "web-prototype"
+    },
+    "echo.prism.B": {
+      "id": "echo.prism.B",
+      "path": "./assets/echo-crew/prism/B.svg",
+      "use": "棱灯司 · 动作图集 B",
+      "author": "回声练习场项目组",
+      "source": "为 T07 网页版独立绘制的机械角色矢量图。",
+      "license": "本项目原创网页版试玩素材。",
+      "realPersonCheck": "无真人姓名、肖像或声音。",
+      "ipCheck": "以乐器、灯具、折纸或工业器具构造角色，独立设计外形。",
+      "status": "web-prototype"
+    },
+    "echo.prism.C": {
+      "id": "echo.prism.C",
+      "path": "./assets/echo-crew/prism/C.svg",
+      "use": "棱灯司 · 动作图集 C",
+      "author": "回声练习场项目组",
+      "source": "为 T07 网页版独立绘制的机械角色矢量图。",
+      "license": "本项目原创网页版试玩素材。",
+      "realPersonCheck": "无真人姓名、肖像或声音。",
+      "ipCheck": "以乐器、灯具、折纸或工业器具构造角色，独立设计外形。",
+      "status": "web-prototype"
+    },
+    "echo.prism.D": {
+      "id": "echo.prism.D",
+      "path": "./assets/echo-crew/prism/D.svg",
+      "use": "棱灯司 · 动作图集 D",
+      "author": "回声练习场项目组",
+      "source": "为 T07 网页版独立绘制的机械角色矢量图。",
+      "license": "本项目原创网页版试玩素材。",
+      "realPersonCheck": "无真人姓名、肖像或声音。",
+      "ipCheck": "以乐器、灯具、折纸或工业器具构造角色，独立设计外形。",
+      "status": "web-prototype"
+    },
+    "echo.prism.E": {
+      "id": "echo.prism.E",
+      "path": "./assets/echo-crew/prism/E.svg",
+      "use": "棱灯司 · 动作图集 E",
+      "author": "回声练习场项目组",
+      "source": "为 T07 网页版独立绘制的机械角色矢量图。",
+      "license": "本项目原创网页版试玩素材。",
+      "realPersonCheck": "无真人姓名、肖像或声音。",
+      "ipCheck": "以乐器、灯具、折纸或工业器具构造角色，独立设计外形。",
+      "status": "web-prototype"
+    },
+    "echo.glider.portrait": {
+      "id": "echo.glider.portrait",
+      "path": "./assets/echo-crew/glider/portrait.svg",
+      "use": "折轨梭 · 角色立绘",
+      "author": "回声练习场项目组",
+      "source": "为 T07 网页版独立绘制的机械角色矢量图。",
+      "license": "本项目原创网页版试玩素材。",
+      "realPersonCheck": "无真人姓名、肖像或声音。",
+      "ipCheck": "以乐器、灯具、折纸或工业器具构造角色，独立设计外形。",
+      "status": "web-prototype"
+    },
+    "echo.glider.A": {
+      "id": "echo.glider.A",
+      "path": "./assets/echo-crew/glider/A.svg",
+      "use": "折轨梭 · 动作图集 A",
+      "author": "回声练习场项目组",
+      "source": "为 T07 网页版独立绘制的机械角色矢量图。",
+      "license": "本项目原创网页版试玩素材。",
+      "realPersonCheck": "无真人姓名、肖像或声音。",
+      "ipCheck": "以乐器、灯具、折纸或工业器具构造角色，独立设计外形。",
+      "status": "web-prototype"
+    },
+    "echo.glider.B": {
+      "id": "echo.glider.B",
+      "path": "./assets/echo-crew/glider/B.svg",
+      "use": "折轨梭 · 动作图集 B",
+      "author": "回声练习场项目组",
+      "source": "为 T07 网页版独立绘制的机械角色矢量图。",
+      "license": "本项目原创网页版试玩素材。",
+      "realPersonCheck": "无真人姓名、肖像或声音。",
+      "ipCheck": "以乐器、灯具、折纸或工业器具构造角色，独立设计外形。",
+      "status": "web-prototype"
+    },
+    "echo.glider.C": {
+      "id": "echo.glider.C",
+      "path": "./assets/echo-crew/glider/C.svg",
+      "use": "折轨梭 · 动作图集 C",
+      "author": "回声练习场项目组",
+      "source": "为 T07 网页版独立绘制的机械角色矢量图。",
+      "license": "本项目原创网页版试玩素材。",
+      "realPersonCheck": "无真人姓名、肖像或声音。",
+      "ipCheck": "以乐器、灯具、折纸或工业器具构造角色，独立设计外形。",
+      "status": "web-prototype"
+    },
+    "echo.glider.D": {
+      "id": "echo.glider.D",
+      "path": "./assets/echo-crew/glider/D.svg",
+      "use": "折轨梭 · 动作图集 D",
+      "author": "回声练习场项目组",
+      "source": "为 T07 网页版独立绘制的机械角色矢量图。",
+      "license": "本项目原创网页版试玩素材。",
+      "realPersonCheck": "无真人姓名、肖像或声音。",
+      "ipCheck": "以乐器、灯具、折纸或工业器具构造角色，独立设计外形。",
+      "status": "web-prototype"
+    },
+    "echo.glider.E": {
+      "id": "echo.glider.E",
+      "path": "./assets/echo-crew/glider/E.svg",
+      "use": "折轨梭 · 动作图集 E",
+      "author": "回声练习场项目组",
+      "source": "为 T07 网页版独立绘制的机械角色矢量图。",
+      "license": "本项目原创网页版试玩素材。",
+      "realPersonCheck": "无真人姓名、肖像或声音。",
+      "ipCheck": "以乐器、灯具、折纸或工业器具构造角色，独立设计外形。",
+      "status": "web-prototype"
+    },
+    "echo.kiln.portrait": {
+      "id": "echo.kiln.portrait",
+      "path": "./assets/echo-crew/kiln/portrait.svg",
+      "use": "炉腹陶 · 角色立绘",
+      "author": "回声练习场项目组",
+      "source": "为 T07 网页版独立绘制的机械角色矢量图。",
+      "license": "本项目原创网页版试玩素材。",
+      "realPersonCheck": "无真人姓名、肖像或声音。",
+      "ipCheck": "以乐器、灯具、折纸或工业器具构造角色，独立设计外形。",
+      "status": "web-prototype"
+    },
+    "echo.kiln.A": {
+      "id": "echo.kiln.A",
+      "path": "./assets/echo-crew/kiln/A.svg",
+      "use": "炉腹陶 · 动作图集 A",
+      "author": "回声练习场项目组",
+      "source": "为 T07 网页版独立绘制的机械角色矢量图。",
+      "license": "本项目原创网页版试玩素材。",
+      "realPersonCheck": "无真人姓名、肖像或声音。",
+      "ipCheck": "以乐器、灯具、折纸或工业器具构造角色，独立设计外形。",
+      "status": "web-prototype"
+    },
+    "echo.kiln.B": {
+      "id": "echo.kiln.B",
+      "path": "./assets/echo-crew/kiln/B.svg",
+      "use": "炉腹陶 · 动作图集 B",
+      "author": "回声练习场项目组",
+      "source": "为 T07 网页版独立绘制的机械角色矢量图。",
+      "license": "本项目原创网页版试玩素材。",
+      "realPersonCheck": "无真人姓名、肖像或声音。",
+      "ipCheck": "以乐器、灯具、折纸或工业器具构造角色，独立设计外形。",
+      "status": "web-prototype"
+    },
+    "echo.kiln.C": {
+      "id": "echo.kiln.C",
+      "path": "./assets/echo-crew/kiln/C.svg",
+      "use": "炉腹陶 · 动作图集 C",
+      "author": "回声练习场项目组",
+      "source": "为 T07 网页版独立绘制的机械角色矢量图。",
+      "license": "本项目原创网页版试玩素材。",
+      "realPersonCheck": "无真人姓名、肖像或声音。",
+      "ipCheck": "以乐器、灯具、折纸或工业器具构造角色，独立设计外形。",
+      "status": "web-prototype"
+    },
+    "echo.kiln.D": {
+      "id": "echo.kiln.D",
+      "path": "./assets/echo-crew/kiln/D.svg",
+      "use": "炉腹陶 · 动作图集 D",
+      "author": "回声练习场项目组",
+      "source": "为 T07 网页版独立绘制的机械角色矢量图。",
+      "license": "本项目原创网页版试玩素材。",
+      "realPersonCheck": "无真人姓名、肖像或声音。",
+      "ipCheck": "以乐器、灯具、折纸或工业器具构造角色，独立设计外形。",
+      "status": "web-prototype"
+    },
+    "echo.bell.portrait": {
+      "id": "echo.bell.portrait",
+      "path": "./assets/echo-crew/bell/portrait.svg",
+      "use": "沫泡潜钟 · 角色立绘",
+      "author": "回声练习场项目组",
+      "source": "为 T07 网页版独立绘制的机械角色矢量图。",
+      "license": "本项目原创网页版试玩素材。",
+      "realPersonCheck": "无真人姓名、肖像或声音。",
+      "ipCheck": "以乐器、灯具、折纸或工业器具构造角色，独立设计外形。",
+      "status": "web-prototype"
+    },
+    "echo.glider.route": {
+      "id": "echo.glider.route",
+      "path": "./assets/echo-crew/glider/route.svg",
+      "use": "折轨梭 · 指路演出",
+      "author": "回声练习场项目组",
+      "source": "为 T07 网页版独立绘制的机械角色矢量图。",
+      "license": "本项目原创网页版试玩素材。",
+      "realPersonCheck": "无真人姓名、肖像或声音。",
+      "ipCheck": "以乐器、灯具、折纸或工业器具构造角色，独立设计外形。",
+      "status": "web-prototype"
     }
   },
   "uiText": {
-    "title": "回声练习场",
+    "title": "回声练习场 · T07",
     "home": "大厅",
     "characters": "角色",
     "stages": "关卡",
@@ -784,37 +2147,2064 @@
     "pvpDescription": "两位玩家共用键盘，各自选角。",
     "trainingDescription": "面对静止目标，试招与练习连段。"
   },
+  "sceneMusic": {
+    "source": "回声练习场 · 场景配乐第一辑",
+    "credits": "原创作曲、编配及程序化音色，通用乐器使用 TimGM6mb（Tim Brechbill、David Bolton）渲染，未采用参考视频的音乐、对白或录音。",
+    "defaultVolume": 0.35,
+    "tracks": {
+      "echo-workshop": {
+        "title": "三石开工",
+        "path": "./assets/music/workshop.ogg",
+        "sampleRate": 48000,
+        "loopStartSample": 0,
+        "loopEndSample": 3177931
+      },
+      "lantern-stage": {
+        "title": "扇影切拍",
+        "path": "./assets/music/stage.ogg",
+        "sampleRate": 48000,
+        "loopStartSample": 0,
+        "loopEndSample": 2880000
+      },
+      "melon-market": {
+        "title": "树荫下的吆喝",
+        "path": "./assets/music/market.ogg",
+        "sampleRate": 48000,
+        "loopStartSample": 0,
+        "loopEndSample": 3291429
+      },
+      "bamboo-hall": {
+        "title": "檐下听招",
+        "path": "./assets/music/hall.ogg",
+        "sampleRate": 48000,
+        "loopStartSample": 0,
+        "loopEndSample": 3200000
+      },
+      "rain-tram": {
+        "title": "末班雨点",
+        "path": "./assets/music/rain.ogg",
+        "sampleRate": 48000,
+        "loopStartSample": 0,
+        "loopEndSample": 3686400
+      }
+    }
+  },
   "defaultScene": "echo-workshop",
   "scenes": {
     "echo-workshop": {
       "id": "echo-workshop",
       "name": "起步台",
       "asset": "echo-workshop",
-      "alt": "春日陶石回响工坊"
+      "alt": "春日陶石回响工坊",
+      "groundImpact": {
+        "material": "dust",
+        "color": "#eac591"
+      }
     },
     "lantern-stage": {
       "id": "lantern-stage",
       "name": "折光拍场",
       "asset": "lantern-stage",
-      "alt": "午夜折光纸灯舞台"
+      "alt": "午夜折光纸灯舞台",
+      "groundImpact": {
+        "material": "glint",
+        "color": "#f3badb"
+      }
     },
     "melon-market": {
       "id": "melon-market",
       "name": "瓜棚午市",
       "asset": "melon-market",
-      "alt": "瓜棚午市"
+      "alt": "瓜棚午市",
+      "groundImpact": {
+        "material": "dust",
+        "color": "#dec59b"
+      }
     },
     "bamboo-hall": {
       "id": "bamboo-hall",
       "name": "听竹议厅",
       "asset": "bamboo-hall",
-      "alt": "听竹议厅竹编会堂"
+      "alt": "听竹议厅竹编会堂",
+      "groundImpact": {
+        "material": "leaf",
+        "color": "#bfd0a1"
+      }
     },
     "rain-tram": {
       "id": "rain-tram",
       "name": "雨拍站前",
       "asset": "rain-tram",
-      "alt": "蓝调雨幕下的旧电车站"
+      "alt": "蓝调雨幕下的旧电车站",
+      "groundImpact": {
+        "material": "ripple",
+        "color": "#b6eafb"
+      }
+    }
+  },
+  "roleModule": {
+    "version": "T07-web.1",
+    "name": "回声工坊六选手",
+    "sourceCommit": "bcbd4d55e360224a78a99b38253e5b13e03378bf",
+    "tuningNote": "全部数值为假设值。时长用逻辑帧，距离用 U，伤害系数乘以攻击力。",
+    "rightsStatus": "角色造型、角色音效、背景故事与登场对白为本项目网页版原创。"
+  },
+  "roster": [
+    "melancholy",
+    "laughing",
+    "sacred",
+    "courier",
+    "nailong",
+    "doubao"
+  ],
+  "animations": {
+    "melancholy": {
+      "prototype": "echo.pendulum.portrait",
+      "sourceId": "melancholy",
+      "family": "pendulum",
+      "sheets": {
+        "A": "echo.pendulum.A",
+        "B": "echo.pendulum.B",
+        "C": "echo.pendulum.C",
+        "D": "echo.pendulum.D",
+        "E": "echo.pendulum.E"
+      },
+      "openingPoses": {
+        "evade": {
+          "sheet": "E",
+          "row": 0,
+          "column": 1
+        },
+        "escape": {
+          "sheet": "E",
+          "row": 1,
+          "column": 3
+        },
+        "skill1": {
+          "sheet": "E",
+          "row": 0,
+          "column": 1
+        },
+        "skill2": {
+          "sheet": "E",
+          "row": 2,
+          "column": 0
+        }
+      },
+      "id": "melancholy",
+      "rows": 4,
+      "columns": 4,
+      "cell": [
+        256,
+        256
+      ],
+      "pivot": [
+        128,
+        232
+      ],
+      "actions": [
+        {
+          "columns": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "id": "idle",
+          "label": "待机",
+          "sheet": "E",
+          "row": 3,
+          "loop": true,
+          "durations": [
+            32,
+            11,
+            12,
+            15
+          ]
+        },
+        {
+          "columns": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "id": "move",
+          "label": "移动",
+          "sheet": "E",
+          "row": 0,
+          "loop": true,
+          "durations": [
+            6,
+            4,
+            5,
+            5
+          ]
+        },
+        {
+          "columns": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "id": "evade",
+          "label": "闪避",
+          "sheet": "A",
+          "row": 2,
+          "loop": false,
+          "durations": [
+            3,
+            5,
+            5,
+            10
+          ],
+          "openingPose": {
+            "sheet": "E",
+            "row": 0,
+            "column": 1
+          }
+        },
+        {
+          "columns": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "id": "escape",
+          "label": "受击脱身",
+          "sheet": "A",
+          "row": 3,
+          "loop": false,
+          "durations": [
+            2,
+            4,
+            6,
+            6
+          ],
+          "openingPose": {
+            "sheet": "E",
+            "row": 1,
+            "column": 3
+          }
+        },
+        {
+          "columns": [
+            0,
+            0,
+            3,
+            3
+          ],
+          "id": "hit",
+          "label": "受击",
+          "sheet": "E",
+          "row": 1,
+          "loop": false,
+          "durations": [
+            2,
+            3,
+            4,
+            5
+          ]
+        },
+        {
+          "columns": [
+            0,
+            0,
+            1,
+            1
+          ],
+          "id": "down",
+          "label": "倒地",
+          "sheet": "E",
+          "row": 1,
+          "loop": false,
+          "durations": [
+            5,
+            6,
+            8,
+            17
+          ]
+        },
+        {
+          "columns": [
+            1,
+            2,
+            2,
+            3
+          ],
+          "id": "getup",
+          "label": "起身",
+          "sheet": "E",
+          "row": 1,
+          "loop": false,
+          "durations": [
+            6,
+            8,
+            8,
+            8
+          ]
+        },
+        {
+          "columns": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "id": "death",
+          "label": "死亡",
+          "sheet": "B",
+          "row": 3,
+          "loop": false,
+          "durations": [
+            6,
+            8,
+            10,
+            14
+          ]
+        },
+        {
+          "columns": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "id": "basic1",
+          "label": "试拍点刺",
+          "sheet": "C",
+          "row": 0,
+          "loop": false,
+          "skillId": "melancholy.n1",
+          "event": "hitbox_active",
+          "durations": [
+            4,
+            4,
+            3,
+            10
+          ]
+        },
+        {
+          "columns": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "id": "basic2",
+          "label": "反摆敲击",
+          "sheet": "C",
+          "row": 1,
+          "loop": false,
+          "skillId": "melancholy.n2",
+          "event": "hitbox_active",
+          "durations": [
+            4,
+            5,
+            3,
+            12
+          ]
+        },
+        {
+          "columns": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "id": "basic3",
+          "label": "旋盘横扫",
+          "sheet": "C",
+          "row": 2,
+          "loop": false,
+          "skillId": "melancholy.n3",
+          "event": "hitbox_active",
+          "durations": [
+            6,
+            6,
+            4,
+            20
+          ]
+        },
+        {
+          "columns": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "id": "block",
+          "label": "防守姿态",
+          "sheet": "C",
+          "row": 3,
+          "loop": false,
+          "durations": [
+            5,
+            7,
+            8,
+            6
+          ]
+        },
+        {
+          "columns": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "id": "skill1",
+          "label": "回身慢步",
+          "sheet": "D",
+          "row": 0,
+          "loop": false,
+          "openingPose": {
+            "sheet": "E",
+            "row": 0,
+            "column": 1
+          },
+          "skillId": "melancholy.s1",
+          "event": "start_backstep",
+          "durations": [
+            3,
+            3,
+            12,
+            16
+          ]
+        },
+        {
+          "columns": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "id": "skill2",
+          "label": "落拍回旋",
+          "sheet": "D",
+          "row": 1,
+          "loop": false,
+          "openingPose": {
+            "sheet": "E",
+            "row": 2,
+            "column": 0
+          },
+          "skillId": "melancholy.s2",
+          "event": "hitbox_active",
+          "durations": [
+            9,
+            9,
+            4,
+            22
+          ]
+        },
+        {
+          "columns": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "id": "ult",
+          "label": "整点独舞",
+          "sheet": "D",
+          "row": 2,
+          "loop": false,
+          "skillId": "melancholy.ult",
+          "event": "hitbox_active",
+          "durations": [
+            24,
+            24,
+            6,
+            30
+          ]
+        },
+        {
+          "columns": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "id": "victory",
+          "label": "胜利",
+          "sheet": "D",
+          "row": 3,
+          "loop": false,
+          "durations": [
+            8,
+            10,
+            12,
+            18
+          ]
+        },
+        {
+          "columns": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "id": "whiff",
+          "label": "打空收势",
+          "sheet": "E",
+          "row": 2,
+          "durations": [
+            4,
+            4,
+            5,
+            8
+          ],
+          "loop": false
+        }
+      ]
+    },
+    "laughing": {
+      "prototype": "echo.drum.portrait",
+      "sourceId": "laughing",
+      "family": "drum",
+      "sheets": {
+        "A": "echo.drum.A",
+        "B": "echo.drum.B",
+        "C": "echo.drum.C",
+        "D": "echo.drum.D",
+        "E": "echo.drum.E"
+      },
+      "openingPoses": {
+        "evade": {
+          "sheet": "E",
+          "row": 0,
+          "column": 3
+        },
+        "escape": {
+          "sheet": "E",
+          "row": 0,
+          "column": 0
+        },
+        "skill1": {
+          "sheet": "E",
+          "row": 0,
+          "column": 2
+        },
+        "skill2": {
+          "sheet": "E",
+          "row": 2,
+          "column": 1
+        }
+      },
+      "id": "laughing",
+      "rows": 4,
+      "columns": 4,
+      "cell": [
+        256,
+        256
+      ],
+      "pivot": [
+        128,
+        232
+      ],
+      "actions": [
+        {
+          "columns": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "id": "idle",
+          "label": "待机",
+          "sheet": "E",
+          "row": 3,
+          "loop": true,
+          "durations": [
+            32,
+            11,
+            12,
+            15
+          ]
+        },
+        {
+          "columns": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "id": "move",
+          "label": "移动",
+          "sheet": "E",
+          "row": 0,
+          "loop": true,
+          "durations": [
+            6,
+            4,
+            5,
+            5
+          ]
+        },
+        {
+          "columns": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "id": "evade",
+          "label": "闪避",
+          "sheet": "A",
+          "row": 2,
+          "loop": false,
+          "durations": [
+            3,
+            5,
+            5,
+            10
+          ],
+          "openingPose": {
+            "sheet": "E",
+            "row": 0,
+            "column": 3
+          }
+        },
+        {
+          "columns": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "id": "escape",
+          "label": "受击脱身",
+          "sheet": "A",
+          "row": 3,
+          "loop": false,
+          "durations": [
+            2,
+            4,
+            6,
+            6
+          ],
+          "openingPose": {
+            "sheet": "E",
+            "row": 0,
+            "column": 0
+          }
+        },
+        {
+          "columns": [
+            0,
+            0,
+            3,
+            3
+          ],
+          "id": "hit",
+          "label": "受击",
+          "sheet": "E",
+          "row": 1,
+          "loop": false,
+          "durations": [
+            2,
+            3,
+            4,
+            5
+          ]
+        },
+        {
+          "columns": [
+            0,
+            0,
+            1,
+            1
+          ],
+          "id": "down",
+          "label": "倒地",
+          "sheet": "E",
+          "row": 1,
+          "loop": false,
+          "durations": [
+            5,
+            6,
+            8,
+            17
+          ]
+        },
+        {
+          "columns": [
+            1,
+            2,
+            2,
+            3
+          ],
+          "id": "getup",
+          "label": "起身",
+          "sheet": "E",
+          "row": 1,
+          "loop": false,
+          "durations": [
+            6,
+            8,
+            8,
+            8
+          ]
+        },
+        {
+          "columns": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "id": "death",
+          "label": "死亡",
+          "sheet": "B",
+          "row": 3,
+          "loop": false,
+          "durations": [
+            6,
+            8,
+            10,
+            14
+          ]
+        },
+        {
+          "columns": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "id": "basic1",
+          "label": "鼓边轻点",
+          "sheet": "C",
+          "row": 0,
+          "loop": false,
+          "skillId": "laughing.n1",
+          "event": "hitbox_active",
+          "durations": [
+            4,
+            4,
+            3,
+            10
+          ]
+        },
+        {
+          "columns": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "id": "basic2",
+          "label": "反拍双击",
+          "sheet": "C",
+          "row": 1,
+          "loop": false,
+          "skillId": "laughing.n2",
+          "event": "hitbox_active",
+          "durations": [
+            4,
+            5,
+            3,
+            12
+          ]
+        },
+        {
+          "columns": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "id": "basic3",
+          "label": "绷面回弹",
+          "sheet": "C",
+          "row": 2,
+          "loop": false,
+          "skillId": "laughing.n3",
+          "event": "hitbox_active",
+          "durations": [
+            5,
+            6,
+            4,
+            20
+          ]
+        },
+        {
+          "columns": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "id": "block",
+          "label": "防守姿态",
+          "sheet": "C",
+          "row": 3,
+          "loop": false,
+          "durations": [
+            5,
+            7,
+            8,
+            6
+          ]
+        },
+        {
+          "columns": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "id": "skill1",
+          "label": "鼓腹震波",
+          "sheet": "D",
+          "row": 0,
+          "loop": false,
+          "openingPose": {
+            "sheet": "E",
+            "row": 0,
+            "column": 2
+          },
+          "skillId": "laughing.s1",
+          "event": "hitbox_active",
+          "durations": [
+            7,
+            7,
+            4,
+            20
+          ]
+        },
+        {
+          "columns": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "id": "skill2",
+          "label": "弹簧跳击",
+          "sheet": "D",
+          "row": 1,
+          "loop": false,
+          "openingPose": {
+            "sheet": "E",
+            "row": 2,
+            "column": 1
+          },
+          "skillId": "laughing.s2",
+          "event": "hitbox_active",
+          "durations": [
+            12,
+            12,
+            4,
+            22
+          ]
+        },
+        {
+          "columns": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "id": "ult",
+          "label": "满场齐鸣",
+          "sheet": "D",
+          "row": 2,
+          "loop": false,
+          "skillId": "laughing.ult",
+          "event": "hitbox_active",
+          "durations": [
+            21,
+            21,
+            6,
+            30
+          ]
+        },
+        {
+          "columns": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "id": "victory",
+          "label": "胜利",
+          "sheet": "D",
+          "row": 3,
+          "loop": false,
+          "durations": [
+            8,
+            10,
+            12,
+            18
+          ]
+        },
+        {
+          "columns": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "id": "whiff",
+          "label": "打空收势",
+          "sheet": "E",
+          "row": 2,
+          "durations": [
+            4,
+            4,
+            5,
+            8
+          ],
+          "loop": false
+        }
+      ]
+    },
+    "sacred": {
+      "prototype": "echo.prism.portrait",
+      "sourceId": "sacred",
+      "family": "prism",
+      "sheets": {
+        "A": "echo.prism.A",
+        "B": "echo.prism.B",
+        "C": "echo.prism.C",
+        "D": "echo.prism.D",
+        "E": "echo.prism.E"
+      },
+      "openingPoses": {
+        "evade": {
+          "sheet": "E",
+          "row": 0,
+          "column": 2
+        },
+        "escape": {
+          "sheet": "E",
+          "row": 1,
+          "column": 2
+        },
+        "skill1": {
+          "sheet": "E",
+          "row": 1,
+          "column": 2
+        },
+        "skill2": {
+          "sheet": "E",
+          "row": 1,
+          "column": 3
+        }
+      },
+      "id": "sacred",
+      "rows": 4,
+      "columns": 4,
+      "cell": [
+        256,
+        256
+      ],
+      "pivot": [
+        128,
+        232
+      ],
+      "actions": [
+        {
+          "columns": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "id": "idle",
+          "label": "待机",
+          "sheet": "E",
+          "row": 3,
+          "loop": true,
+          "durations": [
+            32,
+            11,
+            12,
+            15
+          ]
+        },
+        {
+          "columns": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "id": "move",
+          "label": "移动",
+          "sheet": "E",
+          "row": 0,
+          "loop": true,
+          "durations": [
+            6,
+            4,
+            5,
+            5
+          ]
+        },
+        {
+          "columns": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "id": "evade",
+          "label": "闪避",
+          "sheet": "A",
+          "row": 2,
+          "loop": false,
+          "durations": [
+            3,
+            5,
+            5,
+            10
+          ],
+          "openingPose": {
+            "sheet": "E",
+            "row": 0,
+            "column": 2
+          }
+        },
+        {
+          "columns": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "id": "escape",
+          "label": "受击脱身",
+          "sheet": "A",
+          "row": 3,
+          "loop": false,
+          "durations": [
+            2,
+            4,
+            6,
+            6
+          ],
+          "openingPose": {
+            "sheet": "E",
+            "row": 1,
+            "column": 2
+          }
+        },
+        {
+          "columns": [
+            0,
+            0,
+            3,
+            3
+          ],
+          "id": "hit",
+          "label": "受击",
+          "sheet": "E",
+          "row": 1,
+          "loop": false,
+          "durations": [
+            2,
+            3,
+            4,
+            5
+          ]
+        },
+        {
+          "columns": [
+            0,
+            0,
+            1,
+            1
+          ],
+          "id": "down",
+          "label": "倒地",
+          "sheet": "E",
+          "row": 1,
+          "loop": false,
+          "durations": [
+            5,
+            6,
+            8,
+            17
+          ]
+        },
+        {
+          "columns": [
+            1,
+            2,
+            2,
+            3
+          ],
+          "id": "getup",
+          "label": "起身",
+          "sheet": "E",
+          "row": 1,
+          "loop": false,
+          "durations": [
+            6,
+            8,
+            8,
+            8
+          ]
+        },
+        {
+          "columns": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "id": "death",
+          "label": "死亡",
+          "sheet": "B",
+          "row": 3,
+          "loop": false,
+          "durations": [
+            6,
+            8,
+            10,
+            14
+          ]
+        },
+        {
+          "columns": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "id": "basic1",
+          "label": "点灯推击",
+          "sheet": "C",
+          "row": 0,
+          "loop": false,
+          "skillId": "sacred.n1",
+          "event": "hitbox_active",
+          "durations": [
+            4,
+            4,
+            3,
+            10
+          ]
+        },
+        {
+          "columns": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "id": "basic2",
+          "label": "双棱合击",
+          "sheet": "C",
+          "row": 1,
+          "loop": false,
+          "skillId": "sacred.n2",
+          "event": "hitbox_active",
+          "durations": [
+            5,
+            5,
+            3,
+            12
+          ]
+        },
+        {
+          "columns": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "id": "basic3",
+          "label": "棱面外展",
+          "sheet": "C",
+          "row": 2,
+          "loop": false,
+          "skillId": "sacred.n3",
+          "event": "hitbox_active",
+          "durations": [
+            6,
+            6,
+            4,
+            20
+          ]
+        },
+        {
+          "columns": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "id": "block",
+          "label": "防守姿态",
+          "sheet": "C",
+          "row": 3,
+          "loop": false,
+          "durations": [
+            5,
+            7,
+            8,
+            6
+          ]
+        },
+        {
+          "columns": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "id": "skill1",
+          "label": "静光领域",
+          "sheet": "D",
+          "row": 0,
+          "loop": false,
+          "openingPose": {
+            "sheet": "E",
+            "row": 1,
+            "column": 2
+          },
+          "skillId": "sacred.s1",
+          "event": "place_field",
+          "durations": [
+            9,
+            9,
+            1,
+            21
+          ]
+        },
+        {
+          "columns": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "id": "skill2",
+          "label": "垂光落点",
+          "sheet": "D",
+          "row": 1,
+          "loop": false,
+          "openingPose": {
+            "sheet": "E",
+            "row": 1,
+            "column": 3
+          },
+          "skillId": "sacred.s2",
+          "event": "hitbox_active",
+          "durations": [
+            21,
+            21,
+            4,
+            24
+          ]
+        },
+        {
+          "columns": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "id": "ult",
+          "label": "光域降临",
+          "sheet": "D",
+          "row": 2,
+          "loop": false,
+          "skillId": "sacred.ult",
+          "event": "hitbox_active",
+          "durations": [
+            27,
+            27,
+            6,
+            30
+          ]
+        },
+        {
+          "columns": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "id": "victory",
+          "label": "胜利",
+          "sheet": "D",
+          "row": 3,
+          "loop": false,
+          "durations": [
+            8,
+            10,
+            12,
+            18
+          ]
+        },
+        {
+          "columns": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "id": "whiff",
+          "label": "打空收势",
+          "sheet": "E",
+          "row": 2,
+          "durations": [
+            4,
+            4,
+            5,
+            8
+          ],
+          "loop": false
+        }
+      ]
+    },
+    "courier": {
+      "prototype": "echo.glider.portrait",
+      "sourceId": "courier",
+      "family": "glider",
+      "sheets": {
+        "A": "echo.glider.A",
+        "B": "echo.glider.B",
+        "C": "echo.glider.C",
+        "D": "echo.glider.D",
+        "E": "echo.glider.E"
+      },
+      "openingPoses": {
+        "evade": {
+          "sheet": "E",
+          "row": 0,
+          "column": 2
+        },
+        "escape": {
+          "sheet": "E",
+          "row": 1,
+          "column": 0
+        },
+        "skill1": {
+          "sheet": "E",
+          "row": 2,
+          "column": 1
+        },
+        "skill2": {
+          "sheet": "E",
+          "row": 2,
+          "column": 3
+        }
+      },
+      "id": "courier",
+      "rows": 4,
+      "columns": 4,
+      "cell": [
+        256,
+        256
+      ],
+      "pivot": [
+        128,
+        232
+      ],
+      "actions": [
+        {
+          "columns": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "id": "idle",
+          "label": "待机",
+          "sheet": "E",
+          "row": 3,
+          "loop": true,
+          "durations": [
+            32,
+            11,
+            12,
+            15
+          ]
+        },
+        {
+          "columns": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "id": "move",
+          "label": "移动",
+          "sheet": "E",
+          "row": 0,
+          "loop": true,
+          "durations": [
+            6,
+            4,
+            5,
+            5
+          ]
+        },
+        {
+          "columns": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "id": "evade",
+          "label": "闪避",
+          "sheet": "A",
+          "row": 2,
+          "loop": false,
+          "durations": [
+            3,
+            5,
+            5,
+            10
+          ],
+          "openingPose": {
+            "sheet": "E",
+            "row": 0,
+            "column": 2
+          }
+        },
+        {
+          "columns": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "id": "escape",
+          "label": "受击脱身",
+          "sheet": "A",
+          "row": 3,
+          "loop": false,
+          "durations": [
+            2,
+            4,
+            6,
+            6
+          ],
+          "openingPose": {
+            "sheet": "E",
+            "row": 1,
+            "column": 0
+          }
+        },
+        {
+          "columns": [
+            0,
+            0,
+            3,
+            3
+          ],
+          "id": "hit",
+          "label": "受击",
+          "sheet": "E",
+          "row": 1,
+          "loop": false,
+          "durations": [
+            2,
+            3,
+            4,
+            5
+          ]
+        },
+        {
+          "columns": [
+            0,
+            0,
+            1,
+            1
+          ],
+          "id": "down",
+          "label": "倒地",
+          "sheet": "E",
+          "row": 1,
+          "loop": false,
+          "durations": [
+            5,
+            6,
+            8,
+            17
+          ]
+        },
+        {
+          "columns": [
+            1,
+            2,
+            2,
+            3
+          ],
+          "id": "getup",
+          "label": "起身",
+          "sheet": "E",
+          "row": 1,
+          "loop": false,
+          "durations": [
+            6,
+            8,
+            8,
+            8
+          ]
+        },
+        {
+          "columns": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "id": "death",
+          "label": "死亡",
+          "sheet": "B",
+          "row": 3,
+          "loop": false,
+          "durations": [
+            6,
+            8,
+            10,
+            14
+          ]
+        },
+        {
+          "columns": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "id": "basic1",
+          "label": "折翼前探",
+          "sheet": "C",
+          "row": 0,
+          "loop": false,
+          "skillId": "courier.n1",
+          "event": "hitbox_active",
+          "durations": [
+            4,
+            4,
+            3,
+            10
+          ]
+        },
+        {
+          "columns": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "id": "basic2",
+          "label": "翻翼横扫",
+          "sheet": "C",
+          "row": 1,
+          "loop": false,
+          "skillId": "courier.n2",
+          "event": "hitbox_active",
+          "durations": [
+            4,
+            5,
+            3,
+            12
+          ]
+        },
+        {
+          "columns": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "id": "basic3",
+          "label": "梭身弹击",
+          "sheet": "C",
+          "row": 2,
+          "loop": false,
+          "skillId": "courier.n3",
+          "event": "hitbox_active",
+          "durations": [
+            6,
+            6,
+            4,
+            20
+          ]
+        },
+        {
+          "columns": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "id": "block",
+          "label": "防守姿态",
+          "sheet": "C",
+          "row": 3,
+          "loop": false,
+          "durations": [
+            5,
+            7,
+            8,
+            6
+          ]
+        },
+        {
+          "columns": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "id": "skill1",
+          "label": "落点标记",
+          "sheet": "D",
+          "row": 0,
+          "loop": false,
+          "openingPose": {
+            "sheet": "E",
+            "row": 2,
+            "column": 1
+          },
+          "skillId": "courier.s1",
+          "event": "place_marker",
+          "durations": [
+            6,
+            6,
+            1,
+            17
+          ]
+        },
+        {
+          "columns": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "id": "skill2",
+          "label": "展翼突进",
+          "sheet": "D",
+          "row": 1,
+          "loop": false,
+          "openingPose": {
+            "sheet": "E",
+            "row": 2,
+            "column": 3
+          },
+          "skillId": "courier.s2",
+          "event": "hitbox_active",
+          "durations": [
+            12,
+            12,
+            4,
+            22
+          ]
+        },
+        {
+          "columns": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "id": "ult",
+          "label": "飞轨重落",
+          "sheet": "D",
+          "row": 2,
+          "loop": false,
+          "skillId": "courier.ult",
+          "event": "hitbox_active",
+          "durations": [
+            18,
+            18,
+            6,
+            30
+          ]
+        },
+        {
+          "columns": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "id": "victory",
+          "label": "胜利",
+          "sheet": "D",
+          "row": 3,
+          "loop": false,
+          "durations": [
+            8,
+            10,
+            12,
+            18
+          ]
+        },
+        {
+          "columns": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "id": "whiff",
+          "label": "打空收势",
+          "sheet": "E",
+          "row": 2,
+          "durations": [
+            4,
+            4,
+            5,
+            8
+          ],
+          "loop": false
+        }
+      ]
+    },
+    "nailong": {
+      "prototype": "echo.kiln.portrait",
+      "sourceId": "nailong",
+      "family": "kiln",
+      "sheets": {
+        "A": "echo.kiln.A",
+        "B": "echo.kiln.B",
+        "C": "echo.kiln.C",
+        "D": "echo.kiln.D"
+      },
+      "id": "nailong",
+      "rows": 4,
+      "columns": 4,
+      "cell": [
+        256,
+        256
+      ],
+      "pivot": [
+        128,
+        232
+      ],
+      "actions": [
+        {
+          "columns": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "id": "idle",
+          "label": "待机",
+          "sheet": "A",
+          "row": 0,
+          "loop": true,
+          "durations": [
+            9,
+            9,
+            9,
+            9
+          ]
+        },
+        {
+          "columns": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "id": "move",
+          "label": "移动",
+          "sheet": "A",
+          "row": 1,
+          "loop": true,
+          "durations": [
+            5,
+            5,
+            5,
+            5
+          ]
+        },
+        {
+          "columns": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "id": "evade",
+          "label": "闪避",
+          "sheet": "A",
+          "row": 2,
+          "loop": false,
+          "durations": [
+            3,
+            5,
+            5,
+            10
+          ]
+        },
+        {
+          "columns": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "id": "escape",
+          "label": "受击脱身",
+          "sheet": "A",
+          "row": 3,
+          "loop": false,
+          "durations": [
+            2,
+            4,
+            6,
+            6
+          ]
+        },
+        {
+          "columns": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "id": "hit",
+          "label": "受击",
+          "sheet": "B",
+          "row": 0,
+          "loop": false,
+          "durations": [
+            2,
+            3,
+            4,
+            5
+          ]
+        },
+        {
+          "columns": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "id": "down",
+          "label": "倒地",
+          "sheet": "B",
+          "row": 1,
+          "loop": false,
+          "durations": [
+            5,
+            6,
+            8,
+            17
+          ]
+        },
+        {
+          "columns": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "id": "getup",
+          "label": "起身",
+          "sheet": "B",
+          "row": 2,
+          "loop": false,
+          "durations": [
+            6,
+            8,
+            8,
+            8
+          ]
+        },
+        {
+          "columns": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "id": "death",
+          "label": "死亡",
+          "sheet": "B",
+          "row": 3,
+          "loop": false,
+          "durations": [
+            6,
+            8,
+            10,
+            14
+          ]
+        },
+        {
+          "columns": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "id": "basic1",
+          "label": "风门前推",
+          "sheet": "C",
+          "row": 0,
+          "loop": false,
+          "skillId": "nailong.n1",
+          "event": "hitbox_active",
+          "durations": [
+            3,
+            4,
+            3,
+            10
+          ]
+        },
+        {
+          "columns": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "id": "basic2",
+          "label": "炉膛轻顶",
+          "sheet": "C",
+          "row": 1,
+          "loop": false,
+          "skillId": "nailong.n2",
+          "event": "hitbox_active",
+          "durations": [
+            4,
+            4,
+            3,
+            12
+          ]
+        },
+        {
+          "columns": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "id": "basic3",
+          "label": "转身重推",
+          "sheet": "C",
+          "row": 2,
+          "loop": false,
+          "skillId": "nailong.n3",
+          "event": "hitbox_active",
+          "durations": [
+            5,
+            6,
+            4,
+            20
+          ]
+        },
+        {
+          "columns": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "id": "block",
+          "label": "防守姿态",
+          "sheet": "C",
+          "row": 3,
+          "loop": false,
+          "durations": [
+            5,
+            7,
+            8,
+            6
+          ]
+        },
+        {
+          "columns": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "id": "skill1",
+          "label": "炉膛冲撞",
+          "sheet": "D",
+          "row": 0,
+          "loop": false,
+          "skillId": "nailong.s1",
+          "event": "hitbox_active",
+          "durations": [
+            5,
+            5,
+            4,
+            18
+          ]
+        },
+        {
+          "columns": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "id": "skill2",
+          "label": "添炭蓄热",
+          "sheet": "D",
+          "row": 1,
+          "loop": false,
+          "skillId": "nailong.s2",
+          "event": "gain_fed",
+          "durations": [
+            15,
+            15,
+            1,
+            17
+          ]
+        },
+        {
+          "columns": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "id": "ult",
+          "label": "开炉重落",
+          "sheet": "D",
+          "row": 2,
+          "loop": false,
+          "skillId": "nailong.ult",
+          "event": "hitbox_active",
+          "durations": [
+            18,
+            18,
+            4,
+            30
+          ]
+        },
+        {
+          "columns": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "id": "victory",
+          "label": "胜利",
+          "sheet": "D",
+          "row": 3,
+          "loop": false,
+          "durations": [
+            8,
+            10,
+            12,
+            18
+          ]
+        }
+      ]
     }
   }
 }

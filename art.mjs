@@ -1,4 +1,6 @@
 // Presentation only. All positions, timelines and hit shapes come from the battle snapshot.
+import {arenaFrame, projection, fighterSize, tagTextSize} from './arena-camera.mjs';
+import {doorPose, doorSheetId} from './performance-score.mjs';
 import {drawScenePerformance, fighterPerformance} from './scene-performance.mjs';
 
 const pictures = new Map();
@@ -21,6 +23,18 @@ function available(image) {
   return image && image.complete && image.naturalWidth > 0;
 }
 
+export function warmMatchArt(config, scene, fighterIds) {
+  picture(config.assets[scene.asset].path);
+  for (const id of new Set(fighterIds)) {
+    const fighter = config.characters[id];
+    picture(config.assets[fighter.asset].path);
+    const animation = config.animations?.[fighter.animation];
+    for (const asset of Object.values(animation?.sheets ?? {})) {
+      picture(config.assets[asset].path);
+    }
+  }
+}
+
 function ring(ctx, x, y, rx, ry) {
   ctx.beginPath();
   ctx.ellipse(x, y, rx, ry, 0, 0, 2 * Math.PI);
@@ -35,13 +49,6 @@ function pathLine(ctx, points) {
   ctx.stroke();
 }
 
-function projection(width, height, rules) {
-  const left = width * .045, top = height * .575;
-  const ux = width * .91 / rules.arenaWidth;
-  const uy = height * .345 / rules.arenaDepth;
-  return {width, height, ux, uy, x: x => left + x * ux, y: y => top + y * uy};
-}
-
 function label(ctx, text, x, y, size, color) {
   ctx.font = 'bold ' + size + 'px system-ui, sans-serif';
   ctx.fillStyle = color;
@@ -51,10 +58,6 @@ function label(ctx, text, x, y, size, color) {
 }
 
 function teamInk(team) { return team === 1 ? MINT : GOLD; }
-
-function fighterSize(view, rules, depthY) {
-  return Math.min(view.ux * 2.26, view.height * .41) * (.93 + .10 * depthY / rules.arenaDepth);
-}
 
 function drawBackdrop(ctx, view, battle) {
   const {width, height} = view;
@@ -223,6 +226,21 @@ export function selectActionFrame(animation, actor) {
     while (index < action.durations.length - 1 && tick >= action.durations[index]) {
       tick -= action.durations[index++]
     }
+    if (index === 0 && action.openingPose) return action.openingPose
+    if (index === 3 && action.event === 'hitbox_active' && actor.cast?.seen?.size === 0) {
+      const miss = animation.actions.find(item => item.id === 'whiff')
+      if (miss) {
+        // Short jabs have time for just the final gag. Longer recoveries play its whole sequence.
+        const recovery = action.durations[index]
+        const length = miss.durations.reduce((sum, duration) => sum + duration, 0)
+        let missTick = Math.max(0, length - recovery) + tick * Math.min(1, length / recovery)
+        let frame = 0
+        while (frame < miss.durations.length - 1 && missTick >= miss.durations[frame]) {
+          missTick -= miss.durations[frame++]
+        }
+        return {sheet:miss.sheet, row:miss.row, column:miss.columns[frame]}
+      }
+    }
     return {sheet:action.sheet, row:action.row, column:action.columns[index]}
   }
   const id = actor.state === 'SKILL' ? actor.cast?.button : actionForState[actor.state];
@@ -264,13 +282,23 @@ function spriteFrame(config, animation, actor) {
   };
 }
 
+function dialogueFrame(battle,actor) {
+  if(actor.characterId!=='courier') return null;
+  const image=picture(battle.config.assets[doorSheetId]?.path);
+  const line=battle.performance?.dialogue;
+  if (!available(image) || line?.actorId!==actor.id || line.poseInterrupted ||
+      !['IDLE','MOVE'].includes(actor.state)) return null;
+  const column=doorPose(battle.frame-line.frame,battle.config.rules.tickRate);
+  return column==null ? null : {image,column,row:0,cellHeight:image.naturalHeight};
+}
+
 function drawActor(ctx, view, battle, actor, reduced, contact) {
   const profile = battle.config.characters[actor.characterId];
   const animation = battle.config.animations?.[profile.animation];
   const defeatFrames = actor.state === 'DEAD' && animation
     ? animation.actions.find(a=>a.id===(animation.cell ? 'death' : 'defeat')).durations.reduce((a,b)=>a+b,0) : 35;
   if (actor.state === 'DEAD' && actor.age > defeatFrames + 12) return;
-  const frame = animation && spriteFrame(battle.config, animation, actor);
+  const frame = animation && (dialogueFrame(battle, actor) || spriteFrame(battle.config, animation, actor));
   const image = frame ? frame.image : picture(battle.config.assets[profile.asset]?.path);
   // The ground marker, sprite and nameplate must move together while an
   // instantaneous simulation knockback settles into its visible ground position.
@@ -279,7 +307,8 @@ function drawActor(ctx, view, battle, actor, reduced, contact) {
   const footY = view.y(actor.y - (contact?.hit.pushY ?? 0)*settle);
   const size = fighterSize(view,battle.config.rules,actor.y);
   const color = teamInk(actor.team);
-  const p = frame ? fighterPerformance(battle, actor, reduced) : pose(actor, reduced);
+  // The extra acting sheet already animates the limbs; keep its planted foot on the pivot.
+  const p = frame ? fighterPerformance(battle, actor, reduced || Boolean(animation.sheets.E)) : pose(actor, reduced);
   const dead = actor.state === 'DEAD';
   const guarded = ['GETUP','EVADE','ESCAPE'].includes(actor.state);
   ctx.save();
@@ -312,7 +341,7 @@ function drawActor(ctx, view, battle, actor, reduced, contact) {
   if (dead) ctx.globalAlpha = Math.min(1,Math.max(0,(defeatFrames + 12 - actor.age) / 12));
   if (frame && available(image)) {
     const cellWidth = image.naturalWidth / animation.columns;
-    const cellHeight = image.naturalHeight / animation.rows;
+    const cellHeight = frame.cellHeight ?? image.naturalHeight / animation.rows;
     const displaySize = size * .90;
     const pivot = animation.pivot ?? [cellWidth / 2, cellHeight * 246 / 256];
     ctx.drawImage(image,frame.column*cellWidth,frame.row*cellHeight,cellWidth,cellHeight,
@@ -338,7 +367,7 @@ function drawActor(ctx, view, battle, actor, reduced, contact) {
     const tagY = footY - size * ((frame || sample ? .91 : .69) + p.lift);
     const idLabel = actor.team === 1 ? 'P1' : battle.mode === 'pvp' ? 'P2'
       : battle.mode === 'training' ? '训练假人' : 'CPU';
-    const textSize = Math.max(10, Math.min(15, size * .088));
+    const textSize = tagTextSize(size);
     ctx.font = 'bold ' + textSize + 'px system-ui, sans-serif';
     const plateW = Math.max(ctx.measureText(idLabel).width + 10, hpWidth * .57);
     ctx.fillStyle = '#233841';
@@ -540,6 +569,49 @@ function contactBurst(ctx, hit, radius, age) {
   }
 }
 
+// The floor responds at the defender's foot before knockback. Keep the effect
+// behind fighters and ground warnings, leaving the brighter contact burst on top.
+function drawGroundImpacts(ctx, view, fx, surface) {
+  for (const hit of fx.hits) {
+    if (hit.type !== 'hit' || !['heavy','ultimate'].includes(hit.impact)) continue;
+    const progress = (fx.clock - hit.at) / 18;
+    if (progress >= 1) continue;
+    const radius = view.ux * (hit.impact === 'ultimate' ? .78 : .48);
+    ctx.save();
+    ctx.translate(view.x(hit.targetX ?? hit.x), view.y(hit.targetY ?? hit.y));
+    ctx.scale(hit.dir, 1);
+    ctx.globalAlpha = (1 - progress) * .78;
+    ctx.lineWidth = Math.max(1, radius * .048);
+    ctx.strokeStyle = surface.color;
+    ctx.fillStyle = surface.color;
+    if (surface.material === 'ripple') {
+      for (const scale of [.58, 1]) {
+        const r = radius * (.36 + progress) * scale;
+        ring(ctx, 0, 0, r, r * .21);
+        ctx.stroke();
+      }
+    } else {
+      for (let i = 0; i < 4; i++) {
+        const dx = radius * (i % 2 ? 1 : -.62) * (.28 + progress) * (1 + .17 * i);
+        const height = radius * (i % 2 ? .40 : .24) * Math.sin(Math.PI * progress);
+        ctx.beginPath();
+        if (surface.material === 'dust') {
+          ctx.ellipse(dx, -height, radius * .14, radius * .053, -.16, 0, 2 * Math.PI);
+          ctx.fill();
+        } else if (surface.material === 'glint') {
+          const spark = radius * .11 * (1 - progress);
+          pathLine(ctx, [dx - spark, -height, dx + spark, -height]);
+          pathLine(ctx, [dx, -height - spark, dx, -height + spark]);
+        } else if (surface.material === 'leaf') {
+          ctx.ellipse(dx, -height, radius * .14, radius * .04, i + progress * 1.4, 0, 2 * Math.PI);
+          ctx.fill();
+        }
+      }
+    }
+    ctx.restore();
+  }
+}
+
 function drawHits(ctx, view, battle, fx, reduced) {
   const labels = new Map();
   // New damage stays closest to the contact. Older numbers move above it instead
@@ -596,12 +668,19 @@ export function drawArena(canvas, battle, settings = {}) {
   }
   ctx.save();
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-  const view = projection(width,height,battle.config.rules);
+  const view = projection(width,height,battle.config);
   const reduced = Boolean(settings.reduceEffects || settings.reducedEffects || reducedMotion?.matches);
   const fx = recordBattleFeedback(battle);
   if (!reduced) cameraImpulse(ctx,view,fx);
+  const camera = arenaFrame(view, battle);
+  if (camera.size < 1) {
+    ctx.scale(1 / camera.size, 1 / camera.size);
+    ctx.translate(-camera.left * width, -camera.top * height);
+  }
   drawBackdrop(ctx, view, battle);
-  drawScenePerformance(ctx, view, battle);
+  drawScenePerformance(ctx, view, battle, reduced);
+  const scene = battle.config.scenes[battle.sceneId ?? battle.config.defaultScene];
+  if (!reduced && scene?.groundImpact) drawGroundImpacts(ctx, view, fx, scene.groundImpact);
   const entities = [];
   for (const e of battle.entities) {
     if (e.kind === 'field' || e.kind === 'marker') drawGroundEffect(ctx,view,e,battle.frame);
