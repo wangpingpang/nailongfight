@@ -2,15 +2,23 @@
 <html lang="zh-CN">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="room-api-origin" content="https://nailong-frog-duel.wangpingpang1025.chatgpt.site">
-  <meta name="theme-color" content="#102120">
-  <title>回声练习场 · T07</title>
-  <link rel="stylesheet" href="./style.css">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="referrer" content="no-referrer">
+  <title>奶龙格斗 T07 · 原版试玩</title>
 </head>
 <body>
-  <div id="app"><p class="boot" role="status">正在载入练习场…</p></div>
-  <noscript><p class="boot">请启用 JavaScript 后进入练习场。</p></noscript>
-  <script type="module" src="./main.mjs"></script>
+  <p><a id="play" href="https://nailong-t07-playtest.wangpingpang1025.chatgpt.site/">进入原版 T07 试玩</a></p>
+  <script>
+    const link = document.getElementById('play');
+    const target = new URL(link.href);
+    const source = new URL(location.href);
+    const room = source.searchParams.get('room');
+    const mode = source.searchParams.get('mode');
+    if (room && /^[A-Z0-9]{8}$/i.test(room)) target.searchParams.set('room', room);
+    else if (mode === 'online' || mode === 'local') target.searchParams.set('mode', mode);
+    if (/^#t=[A-Za-z0-9_-]{43}$/.test(source.hash)) target.hash = source.hash;
+    link.href = target.href;
+    location.replace(link.href);
+  </script>
 </body>
 </html>
